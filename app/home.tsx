@@ -8,6 +8,14 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Text as RNRText } from "@/components/ui/text";
 import { getSelectedCampus } from "@/lib/campus-storage";
 import { useAppTheme } from "@/lib/theme-manager";
@@ -23,8 +31,8 @@ import {
   Heart,
   MapPin,
   Moon,
+  MoreVertical,
   Plus,
-  Send,
   Smile,
   Sparkles,
   Sun,
@@ -389,11 +397,11 @@ export default function HomeScreen() {
       />
 
       <View
-        className={`px-4 pt-2 pb-3 border-b flex-row items-center justify-between ${
+        className={`px-4 py-3 border-b flex-row items-center justify-between ${
           isDark ? "bg-black border-zinc-900" : "bg-white border-zinc-200"
         }`}
       >
-        <View className="flex-row items-center gap-2.5">
+        <View className="flex-row items-center gap-3">
           <TouchableOpacity
             onPress={() => router.replace("/")}
             className={`size-8 rounded-full items-center justify-center border ${
@@ -404,80 +412,86 @@ export default function HomeScreen() {
           >
             <ArrowLeft size={16} color={isDark ? "#d4d4d8" : "#3f3f46"} />
           </TouchableOpacity>
-          <View>
-            <Text
-              className={`text-base font-bold tracking-tight ${
-                isDark ? "text-white" : "text-zinc-950"
-              }`}
-            >
-              Mea Culpa
-            </Text>
-            <TouchableOpacity
-              onPress={() => router.push("/campus-select?mode=change")}
-              className="flex-row items-center gap-1"
-            >
-              <MapPin size={10} color="#f43f5e" />
-              <Text className="text-xs font-medium text-rose-500">
-                {myCampus ? myCampus : "Select Campus"}
-              </Text>
-              <Text
-                className={`text-[10px] ${
-                  isDark ? "text-zinc-500" : "text-zinc-400"
-                }`}
-              >
-                • Change
-              </Text>
-            </TouchableOpacity>
-          </View>
+          <Text
+            className={`text-xl font-bold tracking-tight ${
+              isDark ? "text-white" : "text-zinc-950"
+            }`}
+          >
+            Mea Culpa
+          </Text>
         </View>
 
-        <View className="flex-row items-center gap-2">
-          <TouchableOpacity
-            onPress={() => toggleShowAllCampuses(!showAllCampuses)}
-            className={`flex-row items-center gap-1.5 px-3 py-1.5 rounded-full border ${
-              showAllCampuses
-                ? isDark
-                  ? "bg-rose-950/60 border-rose-500/50"
-                  : "bg-rose-50 border-rose-300"
-                : isDark
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <TouchableOpacity
+              className={`size-9 rounded-full items-center justify-center border ${
+                isDark
                   ? "bg-zinc-900 border-zinc-800"
                   : "bg-zinc-100 border-zinc-200"
-            }`}
-          >
-            <Compass
-              size={13}
-              color={
-                showAllCampuses ? "#f43f5e" : isDark ? "#71717a" : "#71717a"
-              }
-            />
-            <Text
-              className={`text-xs font-semibold ${
-                showAllCampuses
-                  ? "text-rose-500 font-bold"
-                  : isDark
-                    ? "text-zinc-400"
-                    : "text-zinc-600"
               }`}
             >
-              {showAllCampuses ? "All Campuses" : "My Campus"}
-            </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            onPress={toggleTheme}
-            className={`size-8 rounded-full items-center justify-center border ${
+              <MoreVertical size={18} color={isDark ? "#d4d4d8" : "#3f3f46"} />
+            </TouchableOpacity>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent
+            className={`w-56 mt-2 ${
               isDark
                 ? "bg-zinc-900 border-zinc-800"
-                : "bg-rose-50 border-rose-200"
+                : "bg-white border-zinc-200"
             }`}
+            align="end"
           >
-            {isDark ? (
-              <Sun size={15} color="#fb7185" />
-            ) : (
-              <Moon size={15} color="#e11d48" />
-            )}
-          </TouchableOpacity>
-        </View>
+            <DropdownMenuLabel
+              className={isDark ? "text-zinc-400" : "text-zinc-500"}
+            >
+              {myCampus ? `Campus: ${myCampus}` : "No Campus Selected"}
+            </DropdownMenuLabel>
+            <DropdownMenuSeparator
+              className={isDark ? "bg-zinc-800" : "bg-zinc-100"}
+            />
+
+            <DropdownMenuItem
+              onPress={() => router.push("/campus-select?mode=change")}
+            >
+              <MapPin
+                size={16}
+                color={isDark ? "#fb7185" : "#e11d48"}
+                className="mr-2"
+              />
+              <Text className={isDark ? "text-white" : "text-zinc-900"}>
+                Change Campus
+              </Text>
+            </DropdownMenuItem>
+
+            <DropdownMenuItem
+              onPress={() => toggleShowAllCampuses(!showAllCampuses)}
+            >
+              <Compass
+                size={16}
+                color={isDark ? "#fb7185" : "#e11d48"}
+                className="mr-2"
+              />
+              <Text className={isDark ? "text-white" : "text-zinc-900"}>
+                {showAllCampuses ? "View My Campus Only" : "View All Campuses"}
+              </Text>
+            </DropdownMenuItem>
+
+            <DropdownMenuSeparator
+              className={isDark ? "bg-zinc-800" : "bg-zinc-100"}
+            />
+
+            <DropdownMenuItem onPress={toggleTheme}>
+              {isDark ? (
+                <Sun size={16} color="#fb7185" className="mr-2" />
+              ) : (
+                <Moon size={16} color="#e11d48" className="mr-2" />
+              )}
+              <Text className={isDark ? "text-white" : "text-zinc-900"}>
+                {isDark ? "Switch to Light Theme" : "Switch to Dark Theme"}
+              </Text>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </View>
 
       <View className="py-2.5 px-4">
@@ -718,7 +732,6 @@ export default function HomeScreen() {
                   <ActivityIndicator size="small" color="#ffffff" />
                 ) : (
                   <>
-                    <Send size={14} color="#ffffff" />
                     <Text className="text-xs font-bold text-white uppercase tracking-wider">
                       Publish
                     </Text>

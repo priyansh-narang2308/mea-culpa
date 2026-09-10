@@ -132,8 +132,8 @@ export default function WelcomeScreen() {
 
   const handleConfessPress = async () => {
     if (!myCampus) {
-      await setSelectedCampus("Stanford University");
-      setMyCampus("Stanford University");
+      await setSelectedCampus("PES University");
+      setMyCampus("PES University");
     }
     router.replace("/home");
   };

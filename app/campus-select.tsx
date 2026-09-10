@@ -1,3 +1,4 @@
+import { CAMPUSES } from "@/constants/campuses";
 import { setSelectedCampus } from "@/lib/campus-storage";
 import { useAppTheme } from "@/lib/theme-manager";
 import { usePostsStore } from "@/stores/usePostsStore";
@@ -23,7 +24,6 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { CAMPUSES } from "@/constants/campuses";
 
 export default function CampusSelectScreen() {
   const { isDark } = useAppTheme();
@@ -120,7 +120,7 @@ export default function CampusSelectScreen() {
               <TextInput
                 value={search}
                 onChangeText={setSearch}
-                placeholder="e.g. Stanford University"
+                placeholder="e.g. PES University"
                 placeholderTextColor={isDark ? "#71717a" : "#a1a1aa"}
                 className={`flex-1 text-sm font-medium ${
                   isDark ? "text-white" : "text-zinc-900"
