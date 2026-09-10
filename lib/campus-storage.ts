@@ -18,4 +18,3 @@ export async function setSelectedCampus(campus: string): Promise<void> {
     console.error("Error setting selected campus:", error);
   }
 }
-

@@ -32,7 +32,6 @@ interface PostsState {
   reportPost: (postId: string) => Promise<{ error?: string | null }>;
   upsertPost: (post: Post) => void;
   subscribeToRealtime: () => () => void;
-  subscribeToRealTime: () => () => void;
 }
 
 export const usePostsStore = create<PostsState>()((set, get) => {
@@ -273,10 +272,6 @@ export const usePostsStore = create<PostsState>()((set, get) => {
       return () => {
         supabase.removeChannel(channel);
       };
-    },
-
-    subscribeToRealTime: () => {
-      return get().subscribeToRealtime();
     },
   };
 });
