@@ -1,16 +1,17 @@
 import { getSelectedCampus, setSelectedCampus } from "@/lib/campus-storage";
+import { useAppTheme } from "@/lib/theme-manager";
 import { usePostsStore } from "@/stores/usePostsStore";
 import { router } from "expo-router";
 import {
   ArrowRight,
   EyeOff,
-  Feather,
   Flame,
+  Heart,
   Lock,
   MapPin,
+  Moon,
   School,
-  Shield,
-  Sparkles,
+  Sun,
 } from "lucide-react-native";
 import { useEffect, useRef } from "react";
 import {
@@ -26,7 +27,6 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Svg, {
-  Circle,
   Defs,
   LinearGradient,
   RadialGradient,
@@ -37,17 +37,19 @@ import Svg, {
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
 export default function WelcomeScreen() {
+  const { isDark, toggleTheme } = useAppTheme();
   const myCampus = usePostsStore((state) => state.myCampus);
   const setMyCampus = usePostsStore((state) => state.setMyCampus);
 
+  // Animated values
   const pulseAnim = useRef(new Animated.Value(1)).current;
   const glowOpacity = useRef(new Animated.Value(0.45)).current;
   const buttonScale = useRef(new Animated.Value(1)).current;
   const contentFade = useRef(new Animated.Value(0)).current;
-  const contentSlide = useRef(new Animated.Value(24)).current;
-  const emblemRotate = useRef(new Animated.Value(0)).current;
+  const contentSlide = useRef(new Animated.Value(20)).current;
 
   useEffect(() => {
+    // Initialize campus from storage if available
     const initCampus = async () => {
       const savedCampus = await getSelectedCampus();
       if (savedCampus) {
@@ -58,16 +60,17 @@ export default function WelcomeScreen() {
     };
     initCampus();
 
+    // Smooth entry animation
     Animated.parallel([
       Animated.timing(contentFade, {
         toValue: 1,
-        duration: 900,
+        duration: 800,
         easing: Easing.out(Easing.cubic),
         useNativeDriver: true,
       }),
       Animated.timing(contentSlide, {
         toValue: 0,
-        duration: 900,
+        duration: 800,
         easing: Easing.out(Easing.cubic),
         useNativeDriver: true,
       }),
@@ -78,14 +81,14 @@ export default function WelcomeScreen() {
       Animated.sequence([
         Animated.parallel([
           Animated.timing(pulseAnim, {
-            toValue: 1.08,
-            duration: 1800,
+            toValue: 1.06,
+            duration: 1600,
             easing: Easing.inOut(Easing.ease),
             useNativeDriver: true,
           }),
           Animated.timing(glowOpacity, {
             toValue: 0.85,
-            duration: 1800,
+            duration: 1600,
             easing: Easing.inOut(Easing.ease),
             useNativeDriver: true,
           }),
@@ -93,13 +96,13 @@ export default function WelcomeScreen() {
         Animated.parallel([
           Animated.timing(pulseAnim, {
             toValue: 1,
-            duration: 1800,
+            duration: 1600,
             easing: Easing.inOut(Easing.ease),
             useNativeDriver: true,
           }),
           Animated.timing(glowOpacity, {
             toValue: 0.45,
-            duration: 1800,
+            duration: 1600,
             easing: Easing.inOut(Easing.ease),
             useNativeDriver: true,
           }),
@@ -108,27 +111,10 @@ export default function WelcomeScreen() {
     );
     breathingPulse.start();
 
-    // Slow subtle rotation for decorative emblem aura
-    const slowRotation = Animated.loop(
-      Animated.timing(emblemRotate, {
-        toValue: 1,
-        duration: 24000,
-        easing: Easing.linear,
-        useNativeDriver: true,
-      }),
-    );
-    slowRotation.start();
-
     return () => {
       breathingPulse.stop();
-      slowRotation.stop();
     };
   }, []);
-
-  const spin = emblemRotate.interpolate({
-    inputRange: [0, 1],
-    outputRange: ["0deg", "360deg"],
-  });
 
   const handlePressIn = () => {
     Animated.spring(buttonScale, {
@@ -149,319 +135,373 @@ export default function WelcomeScreen() {
   };
 
   const handleConfessPress = async () => {
-    // If no campus is selected yet, default to Stanford or All Campuses
     if (!myCampus) {
       await setSelectedCampus("Stanford University");
       setMyCampus("Stanford University");
     }
-
-    // Direct transition to the feed home screen
     router.replace("/home");
   };
 
   return (
-    <View className="flex-1 bg-slate-950">
-      <StatusBar barStyle="light-content" backgroundColor="#020617" />
+    <View className={`flex-1 ${isDark ? "bg-black" : "bg-white"}`}>
+      <StatusBar
+        barStyle={isDark ? "light-content" : "dark-content"}
+        backgroundColor={isDark ? "#000000" : "#ffffff"}
+      />
 
-      {/* ========================================================================= */}
-      {/* BACKGROUND LAYER                                                          */}
-      {/* Designed with rich ambient atmospheric lighting.                          */}
-      {/* Note: To customize later with a background image or pattern, you can      */}
-      {/* replace or wrap this Svg layer with an <ImageBackground> component.       */}
-      {/* ========================================================================= */}
-      <View className="absolute inset-0">
+      {/* Ambient Gradient Background Layer */}
+      <View className="absolute inset-0 pointer-events-none">
         <Svg
           height={SCREEN_HEIGHT}
           width={SCREEN_WIDTH}
           className="absolute inset-0"
         >
           <Defs>
-            {/* Deep Obsidian Canvas Gradient */}
-            <LinearGradient id="bgGrad" x1="0" y1="0" x2="0" y2="1">
-              <Stop offset="0%" stopColor="#030712" stopOpacity="1" />
-              <Stop offset="50%" stopColor="#090d16" stopOpacity="1" />
-              <Stop offset="100%" stopColor="#020617" stopOpacity="1" />
-            </LinearGradient>
-
-            {/* Top-Right Amethyst / Violet Radial Aura */}
-            <RadialGradient
-              id="violetGlow"
-              cx="85%"
-              cy="18%"
-              r="60%"
-              fx="85%"
-              fy="18%"
-            >
-              <Stop offset="0%" stopColor="#7c3aed" stopOpacity="0.32" />
-              <Stop offset="45%" stopColor="#6366f1" stopOpacity="0.16" />
-              <Stop offset="100%" stopColor="#030712" stopOpacity="0" />
-            </RadialGradient>
-
-            {/* Bottom-Left Crimson / Rose Radial Ember Glow */}
-            <RadialGradient
-              id="roseGlow"
-              cx="15%"
-              cy="78%"
-              r="65%"
-              fx="15%"
-              fy="78%"
-            >
-              <Stop offset="0%" stopColor="#e11d48" stopOpacity="0.25" />
-              <Stop offset="50%" stopColor="#db2777" stopOpacity="0.12" />
-              <Stop offset="100%" stopColor="#020617" stopOpacity="0" />
-            </RadialGradient>
-
-            {/* Center Subtle Blue Mist */}
-            <RadialGradient
-              id="centerAura"
-              cx="50%"
-              cy="48%"
-              r="40%"
-              fx="50%"
-              fy="48%"
-            >
-              <Stop offset="0%" stopColor="#3b82f6" stopOpacity="0.12" />
-              <Stop offset="100%" stopColor="#030712" stopOpacity="0" />
-            </RadialGradient>
-
-            {/* Button Gradient */}
-            <LinearGradient id="btnGrad" x1="0" y1="0" x2="1" y2="1">
-              <Stop offset="0%" stopColor="#8b5cf6" stopOpacity="1" />
-              <Stop offset="50%" stopColor="#6366f1" stopOpacity="1" />
-              <Stop offset="100%" stopColor="#ec4899" stopOpacity="1" />
-            </LinearGradient>
+            {isDark ? (
+              <>
+                {/* Dark Theme: Deep Black with Soft Rose / Pink Glow */}
+                <RadialGradient
+                  id="ambientGlow"
+                  cx="80%"
+                  cy="15%"
+                  r="70%"
+                  fx="80%"
+                  fy="15%"
+                >
+                  <Stop offset="0%" stopColor="#f43f5e" stopOpacity="0.22" />
+                  <Stop offset="50%" stopColor="#db2777" stopOpacity="0.08" />
+                  <Stop offset="100%" stopColor="#000000" stopOpacity="0" />
+                </RadialGradient>
+                <RadialGradient
+                  id="bottomGlow"
+                  cx="15%"
+                  cy="85%"
+                  r="65%"
+                  fx="15%"
+                  fy="85%"
+                >
+                  <Stop offset="0%" stopColor="#be185d" stopOpacity="0.18" />
+                  <Stop offset="60%" stopColor="#000000" stopOpacity="0" />
+                </RadialGradient>
+              </>
+            ) : (
+              <>
+                {/* Light Theme: Pristine White with Soft Blush Pink Glow */}
+                <RadialGradient
+                  id="ambientGlow"
+                  cx="85%"
+                  cy="12%"
+                  r="65%"
+                  fx="85%"
+                  fy="12%"
+                >
+                  <Stop offset="0%" stopColor="#fecdd3" stopOpacity="0.6" />
+                  <Stop offset="50%" stopColor="#fdf2f8" stopOpacity="0.3" />
+                  <Stop offset="100%" stopColor="#ffffff" stopOpacity="0" />
+                </RadialGradient>
+                <RadialGradient
+                  id="bottomGlow"
+                  cx="10%"
+                  cy="88%"
+                  r="60%"
+                  fx="10%"
+                  fy="88%"
+                >
+                  <Stop offset="0%" stopColor="#ffe4e6" stopOpacity="0.55" />
+                  <Stop offset="55%" stopColor="#ffffff" stopOpacity="0" />
+                </RadialGradient>
+              </>
+            )}
           </Defs>
-
-          {/* Base Background */}
           <Rect
             x="0"
             y="0"
             width={SCREEN_WIDTH}
             height={SCREEN_HEIGHT}
-            fill="url(#bgGrad)"
-          />
-
-          {/* Atmospheric Lights */}
-          <Rect
-            x="0"
-            y="0"
-            width={SCREEN_WIDTH}
-            height={SCREEN_HEIGHT}
-            fill="url(#violetGlow)"
+            fill={isDark ? "#000000" : "#ffffff"}
           />
           <Rect
             x="0"
             y="0"
             width={SCREEN_WIDTH}
             height={SCREEN_HEIGHT}
-            fill="url(#roseGlow)"
+            fill="url(#ambientGlow)"
           />
           <Rect
             x="0"
             y="0"
             width={SCREEN_WIDTH}
             height={SCREEN_HEIGHT}
-            fill="url(#centerAura)"
-          />
-
-          {/* Subtle Starlight / Celestial Orbs */}
-          <Circle
-            cx={SCREEN_WIDTH * 0.22}
-            cy={SCREEN_HEIGHT * 0.16}
-            r="1.5"
-            fill="#ffffff"
-            opacity="0.4"
-          />
-          <Circle
-            cx={SCREEN_WIDTH * 0.78}
-            cy={SCREEN_HEIGHT * 0.24}
-            r="2"
-            fill="#c084fc"
-            opacity="0.6"
-          />
-          <Circle
-            cx={SCREEN_WIDTH * 0.88}
-            cy={SCREEN_HEIGHT * 0.62}
-            r="1.5"
-            fill="#f43f5e"
-            opacity="0.5"
-          />
-          <Circle
-            cx={SCREEN_WIDTH * 0.14}
-            cy={SCREEN_HEIGHT * 0.72}
-            r="2"
-            fill="#818cf8"
-            opacity="0.4"
-          />
-          <Circle
-            cx={SCREEN_WIDTH * 0.65}
-            cy={SCREEN_HEIGHT * 0.88}
-            r="1.5"
-            fill="#ffffff"
-            opacity="0.3"
+            fill="url(#bottomGlow)"
           />
         </Svg>
       </View>
 
-      {/* ========================================================================= */}
-      {/* FOREGROUND CONTENT                                                        */}
-      {/* ========================================================================= */}
-      <SafeAreaView className="flex-1 justify-between">
+      {/* Main Foreground Content */}
+      <SafeAreaView className="flex-1">
         <ScrollView
           contentContainerStyle={{
             flexGrow: 1,
             justifyContent: "space-between",
+            paddingHorizontal: 24,
+            paddingVertical: 12,
           }}
           showsVerticalScrollIndicator={false}
-          className="px-6 py-4"
         >
-          {/* Top Bar: Anonymity Pill + Campus Switcher */}
+          {/* Top Header: Anonymity Badge + Campus + Theme Switcher */}
           <Animated.View
             style={{
               opacity: contentFade,
               transform: [{ translateY: contentSlide }],
             }}
-            className="flex-row items-center justify-between pt-2"
+            className="flex-row items-center justify-between pt-1"
           >
-            {/* 100% Anonymous Status Badge */}
-            <View className="flex-row items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-900/80 border border-slate-800/90 shadow-sm">
-              <Lock size={12} color="#a855f7" />
-              <Text className="text-[11px] font-semibold tracking-wide text-slate-300">
+            {/* 100% Anonymous Tag */}
+            <View
+              className={`flex-row items-center gap-1.5 px-3 py-1.5 rounded-full border ${
+                isDark
+                  ? "bg-zinc-900/90 border-zinc-800"
+                  : "bg-rose-50/80 border-rose-200/80"
+              }`}
+            >
+              <Lock size={12} color={isDark ? "#fb7185" : "#e11d48"} />
+              <Text
+                className={`text-[11px] font-semibold tracking-wide ${
+                  isDark ? "text-zinc-200" : "text-rose-900"
+                }`}
+              >
                 100% Anonymous
               </Text>
             </View>
 
-            {/* Campus Selector Chip */}
-            <TouchableOpacity
-              onPress={() => router.push("/campus-select?mode=change")}
-              className="flex-row items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-900/80 border border-slate-800/90"
-            >
-              <MapPin size={12} color="#38bdf8" />
-              <Text
-                className="text-[11px] font-medium text-sky-300 max-w-[120px]"
-                numberOfLines={1}
+            <View className="flex-row items-center gap-2">
+              {/* Campus Selector Chip */}
+              <TouchableOpacity
+                onPress={() => router.push("/campus-select?mode=change")}
+                className={`flex-row items-center gap-1.5 px-3 py-1.5 rounded-full border ${
+                  isDark
+                    ? "bg-zinc-900/90 border-zinc-800"
+                    : "bg-zinc-100/90 border-zinc-200"
+                }`}
               >
-                {myCampus || "Select Campus"}
-              </Text>
-            </TouchableOpacity>
+                <MapPin size={12} color={isDark ? "#fb7185" : "#e11d48"} />
+                <Text
+                  className={`text-[11px] font-medium max-w-[110px] ${
+                    isDark ? "text-zinc-300" : "text-zinc-800"
+                  }`}
+                  numberOfLines={1}
+                >
+                  {myCampus || "Select Campus"}
+                </Text>
+              </TouchableOpacity>
+
+              {/* Theme Toggle Button */}
+              <TouchableOpacity
+                onPress={toggleTheme}
+                accessibilityLabel="Toggle Light and Dark Theme"
+                className={`size-8 rounded-full items-center justify-center border ${
+                  isDark
+                    ? "bg-zinc-900 border-zinc-800"
+                    : "bg-rose-50 border-rose-200"
+                }`}
+              >
+                {isDark ? (
+                  <Sun size={15} color="#fb7185" />
+                ) : (
+                  <Moon size={15} color="#e11d48" />
+                )}
+              </TouchableOpacity>
+            </View>
           </Animated.View>
 
-          {/* Central Hero Showcase */}
+          {/* Central Hero: Clear, Legible, High-Contrast Branding & Use Case */}
           <Animated.View
             style={{
               opacity: contentFade,
               transform: [{ translateY: contentSlide }],
             }}
-            className="items-center my-auto py-8"
+            className="items-center my-auto py-6"
           >
-            {/* Glowing Crest / Emblem */}
-            <View className="relative items-center justify-center mb-8">
-              {/* Rotating Ambient Halo Ring */}
-              <Animated.View
-                style={{
-                  transform: [{ rotate: spin }],
-                }}
-                className="absolute size-28 rounded-full border border-purple-500/20"
+            {/* Subtle Pinkish / Clean Icon Badge */}
+            <View
+              className={`size-16 rounded-2xl items-center justify-center mb-5 border shadow-sm ${
+                isDark
+                  ? "bg-zinc-900/80 border-rose-500/30"
+                  : "bg-rose-50 border-rose-200"
+              }`}
+            >
+              <Heart
+                size={30}
+                color={isDark ? "#fb7185" : "#e11d48"}
+                fill={isDark ? "#fb7185" : "#e11d48"}
               />
-              <View className="absolute size-24 rounded-full bg-purple-600/10 border border-indigo-500/30" />
-
-              {/* Central Glass Circle with Feather */}
-              <View className="size-20 rounded-full bg-slate-900/90 border border-slate-700/60 items-center justify-center shadow-2xl">
-                <Feather size={34} color="#e0e7ff" />
-              </View>
-
-              {/* Sparkle Accent */}
-              <View className="absolute -top-1 -right-1 size-7 rounded-full bg-indigo-950 border border-indigo-500/60 items-center justify-center">
-                <Sparkles size={14} color="#c084fc" />
-              </View>
             </View>
 
-            {/* Main Application Name */}
-            <View className="items-center mb-3">
-              <Text className="text-[12px] font-bold tracking-[0.25em] text-indigo-400 uppercase mb-1">
-                CAMPUS WHISPERS
-              </Text>
-              <Text className="text-5xl font-extrabold tracking-tight text-white text-center">
-                MEA CULPA
-              </Text>
-            </View>
+            {/* App Name */}
+            <Text
+              className={`text-4xl font-extrabold tracking-tight text-center mb-2 ${
+                isDark ? "text-white" : "text-zinc-950"
+              }`}
+            >
+              Mea Culpa
+            </Text>
 
-            {/* Latin Definition / Meaning Badge */}
-            <View className="px-3.5 py-1 rounded-full bg-white/5 border border-white/10 mb-4">
-              <Text className="text-xs font-serif italic text-slate-400 text-center">
+            {/* Latin Definition Tag */}
+            <View
+              className={`px-3 py-1 rounded-full border mb-4 ${
+                isDark
+                  ? "bg-rose-950/30 border-rose-900/40"
+                  : "bg-rose-100/70 border-rose-200"
+              }`}
+            >
+              <Text
+                className={`text-xs font-medium italic ${
+                  isDark ? "text-rose-300" : "text-rose-700"
+                }`}
+              >
                 "Through my fault" • Latin
               </Text>
             </View>
 
-            {/* Poetic Application Tagline */}
-            <Text className="text-sm text-slate-400 text-center max-w-[310px] leading-relaxed mb-8">
-              Unspoken truths, late-night thoughts, and campus secrets. Shared
-              freely and completely untraceable.
+            {/* Crystal Clear Description of What the App Does */}
+            <Text
+              className={`text-base text-center max-w-[320px] font-normal leading-relaxed mb-8 ${
+                isDark ? "text-zinc-400" : "text-zinc-600"
+              }`}
+            >
+              The unfiltered anonymous campus feed. Share secret crushes,
+              midnight confessions, exam rants, and unspoken thoughts - with
+              zero identity attached.
             </Text>
 
-            {/* 3 Value Pillars */}
-            <View className="flex-row items-center justify-between w-full max-w-[340px] px-2 py-3 rounded-2xl bg-slate-900/50 border border-slate-800/60">
-              <View className="flex-1 items-center px-1">
-                <EyeOff size={16} color="#c084fc" className="mb-1" />
-                <Text className="text-[11px] font-semibold text-slate-200 mt-1">
-                  Zero Trace
-                </Text>
-                <Text className="text-[9px] text-slate-500 text-center">
-                  No identity
-                </Text>
+            {/* 3 Value & Use-Case Cards */}
+            <View className="w-full max-w-[340px] gap-2.5">
+              {/* Card 1: 100% Anonymous */}
+              <View
+                className={`flex-row items-center p-3.5 rounded-2xl border ${
+                  isDark
+                    ? "bg-zinc-950/80 border-zinc-800/80"
+                    : "bg-white/90 border-zinc-200/90 shadow-sm"
+                }`}
+              >
+                <View
+                  className={`size-9 rounded-xl items-center justify-center mr-3 ${
+                    isDark ? "bg-rose-950/40" : "bg-rose-50"
+                  }`}
+                >
+                  <EyeOff size={18} color={isDark ? "#fb7185" : "#e11d48"} />
+                </View>
+                <View className="flex-1">
+                  <Text
+                    className={`text-sm font-semibold ${
+                      isDark ? "text-zinc-100" : "text-zinc-900"
+                    }`}
+                  >
+                    Post Anonymously
+                  </Text>
+                  <Text
+                    className={`text-xs ${
+                      isDark ? "text-zinc-400" : "text-zinc-500"
+                    }`}
+                  >
+                    No account, no names, zero tracking.
+                  </Text>
+                </View>
               </View>
 
-              <View className="h-7 w-[1px] bg-slate-800" />
-
-              <View className="flex-1 items-center px-1">
-                <School size={16} color="#60a5fa" className="mb-1" />
-                <Text className="text-[11px] font-semibold text-slate-200 mt-1">
-                  Campus Only
-                </Text>
-                <Text className="text-[9px] text-slate-500 text-center">
-                  Your peers
-                </Text>
+              {/* Card 2: Campus Community */}
+              <View
+                className={`flex-row items-center p-3.5 rounded-2xl border ${
+                  isDark
+                    ? "bg-zinc-950/80 border-zinc-800/80"
+                    : "bg-white/90 border-zinc-200/90 shadow-sm"
+                }`}
+              >
+                <View
+                  className={`size-9 rounded-xl items-center justify-center mr-3 ${
+                    isDark ? "bg-rose-950/40" : "bg-rose-50"
+                  }`}
+                >
+                  <School size={18} color={isDark ? "#fb7185" : "#e11d48"} />
+                </View>
+                <View className="flex-1">
+                  <Text
+                    className={`text-sm font-semibold ${
+                      isDark ? "text-zinc-100" : "text-zinc-900"
+                    }`}
+                  >
+                    Campus Focused
+                  </Text>
+                  <Text
+                    className={`text-xs ${
+                      isDark ? "text-zinc-400" : "text-zinc-500"
+                    }`}
+                  >
+                    Read & share exclusive to your university.
+                  </Text>
+                </View>
               </View>
 
-              <View className="h-7 w-[1px] bg-slate-800" />
-
-              <View className="flex-1 items-center px-1">
-                <Flame size={16} color="#f43f5e" className="mb-1" />
-                <Text className="text-[11px] font-semibold text-slate-200 mt-1">
-                  Realtime
-                </Text>
-                <Text className="text-[9px] text-slate-500 text-center">
-                  Live reactions
-                </Text>
+              {/* Card 3: Live Reactions */}
+              <View
+                className={`flex-row items-center p-3.5 rounded-2xl border ${
+                  isDark
+                    ? "bg-zinc-950/80 border-zinc-800/80"
+                    : "bg-white/90 border-zinc-200/90 shadow-sm"
+                }`}
+              >
+                <View
+                  className={`size-9 rounded-xl items-center justify-center mr-3 ${
+                    isDark ? "bg-rose-950/40" : "bg-rose-50"
+                  }`}
+                >
+                  <Flame size={18} color={isDark ? "#fb7185" : "#e11d48"} />
+                </View>
+                <View className="flex-1">
+                  <Text
+                    className={`text-sm font-semibold ${
+                      isDark ? "text-zinc-100" : "text-zinc-900"
+                    }`}
+                  >
+                    Realtime Reactions
+                  </Text>
+                  <Text
+                    className={`text-xs ${
+                      isDark ? "text-zinc-400" : "text-zinc-500"
+                    }`}
+                  >
+                    Upvote, react with flames, and support peers.
+                  </Text>
+                </View>
               </View>
             </View>
           </Animated.View>
 
-          {/* Bottom Actions: The Animated "Confess" Button */}
+          {/* Bottom Call To Action: The Animated Pinkish "Confess" Button */}
           <Animated.View
             style={{
               opacity: contentFade,
               transform: [{ translateY: contentSlide }],
             }}
-            className="w-full items-center pb-6"
+            className="w-full items-center pb-4 pt-2"
           >
             <View className="relative w-full max-w-[320px] items-center justify-center">
-              {/* Continuous Breathing Glow Aura */}
+              {/* Continuous Breathing Glow Halo */}
               <Animated.View
                 style={{
                   transform: [{ scale: pulseAnim }],
                   opacity: glowOpacity,
-                  backgroundColor: "#7c3aed",
-                  shadowColor: "#ec4899",
+                  backgroundColor: isDark ? "#e11d48" : "#fb7185",
+                  shadowColor: isDark ? "#f43f5e" : "#f43f5e",
                   shadowOffset: { width: 0, height: 0 },
-                  shadowOpacity: 0.9,
-                  shadowRadius: 20,
-                  elevation: 14,
+                  shadowOpacity: isDark ? 0.9 : 0.6,
+                  shadowRadius: 18,
+                  elevation: 12,
                 }}
-                className="absolute -inset-2 rounded-3xl opacity-70"
+                className="absolute -inset-2 rounded-2xl opacity-60"
               />
 
-              {/* The Touchable Button */}
+              {/* The Pressable CTA Button */}
               <Animated.View
                 style={{
                   transform: [{ scale: buttonScale }],
@@ -472,17 +512,17 @@ export default function WelcomeScreen() {
                   onPressIn={handlePressIn}
                   onPressOut={handlePressOut}
                   onPress={handleConfessPress}
-                  className="w-full py-4 px-6 rounded-2xl bg-indigo-600 shadow-xl flex-row items-center justify-center gap-3 border border-indigo-400/30 overflow-hidden"
+                  className="w-full py-4 px-6 rounded-2xl flex-row items-center justify-center gap-2.5 overflow-hidden shadow-lg border border-rose-400/30"
                   style={{
-                    backgroundColor: "#6366f1",
+                    backgroundColor: "#e11d48",
                   }}
                 >
-                  {/* Internal button gradient overlay via SVG */}
+                  {/* Subtle Pinkish-to-Rose gradient fill */}
                   <View className="absolute inset-0">
                     <Svg height="100%" width="100%">
                       <Defs>
                         <LinearGradient
-                          id="btnLinear"
+                          id="btnPinkGrad"
                           x1="0"
                           y1="0"
                           x2="1"
@@ -490,18 +530,13 @@ export default function WelcomeScreen() {
                         >
                           <Stop
                             offset="0%"
-                            stopColor="#7c3aed"
-                            stopOpacity="0.9"
-                          />
-                          <Stop
-                            offset="50%"
-                            stopColor="#6366f1"
+                            stopColor="#f43f5e"
                             stopOpacity="1"
                           />
                           <Stop
                             offset="100%"
-                            stopColor="#ec4899"
-                            stopOpacity="0.9"
+                            stopColor="#db2777"
+                            stopOpacity="1"
                           />
                         </LinearGradient>
                       </Defs>
@@ -510,36 +545,17 @@ export default function WelcomeScreen() {
                         y="0"
                         width="100%"
                         height="100%"
-                        fill="url(#btnLinear)"
+                        fill="url(#btnPinkGrad)"
                       />
                     </Svg>
                   </View>
 
-                  <Sparkles size={20} color="#ffffff" />
                   <Text className="text-lg font-bold tracking-wide text-white">
                     Confess
                   </Text>
-                  <ArrowRight size={20} color="#ffffff" />
+                  <ArrowRight size={19} color="#ffffff" />
                 </Pressable>
               </Animated.View>
-            </View>
-
-            {/* Secondary Direct Feed Link */}
-            <TouchableOpacity
-              onPress={() => router.replace("/home")}
-              className="mt-4 py-2 px-4"
-            >
-              <Text className="text-xs font-medium text-slate-400 text-center">
-                Or explore confessions feed →
-              </Text>
-            </TouchableOpacity>
-
-            {/* Subtle Encryption / Security Note */}
-            <View className="flex-row items-center gap-1.5 mt-2">
-              <Shield size={11} color="#64748b" />
-              <Text className="text-[10px] text-slate-500">
-                Encrypted & completely untraceable
-              </Text>
             </View>
           </Animated.View>
         </ScrollView>
