@@ -61,7 +61,6 @@ export default function CampusSelectScreen() {
         behavior={Platform.OS === "ios" ? "padding" : undefined}
         className="flex-1"
       >
-        {/* Header */}
         <View
           className={`px-5 pt-3 pb-4 border-b flex-row items-center justify-between ${
             isDark ? "bg-black border-zinc-900" : "bg-white border-zinc-100"
@@ -102,7 +101,6 @@ export default function CampusSelectScreen() {
         </View>
 
         <View className="p-5 flex-1">
-          {/* Custom Search / Input */}
           <View className="mb-5">
             <Text
               className={`text-xs font-semibold uppercase tracking-wider mb-2 ${
@@ -188,7 +186,6 @@ export default function CampusSelectScreen() {
             )}
           </TouchableOpacity>
 
-          {/* Popular Campuses Header */}
           <View className="flex-row items-center justify-between mb-2">
             <Text
               className={`text-xs font-semibold uppercase tracking-wider ${
@@ -200,7 +197,6 @@ export default function CampusSelectScreen() {
             <Sparkles size={14} color={isDark ? "#fb7185" : "#e11d48"} />
           </View>
 
-          {/* List */}
           <FlatList
             data={filteredCampuses}
             keyExtractor={(item) => item}

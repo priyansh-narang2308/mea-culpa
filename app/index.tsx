@@ -41,7 +41,6 @@ export default function WelcomeScreen() {
   const myCampus = usePostsStore((state) => state.myCampus);
   const setMyCampus = usePostsStore((state) => state.setMyCampus);
 
-  // Animated values
   const pulseAnim = useRef(new Animated.Value(1)).current;
   const glowOpacity = useRef(new Animated.Value(0.45)).current;
   const buttonScale = useRef(new Animated.Value(1)).current;
@@ -49,7 +48,6 @@ export default function WelcomeScreen() {
   const contentSlide = useRef(new Animated.Value(20)).current;
 
   useEffect(() => {
-    // Initialize campus from storage if available
     const initCampus = async () => {
       const savedCampus = await getSelectedCampus();
       if (savedCampus) {
@@ -60,7 +58,6 @@ export default function WelcomeScreen() {
     };
     initCampus();
 
-    // Smooth entry animation
     Animated.parallel([
       Animated.timing(contentFade, {
         toValue: 1,
@@ -76,7 +73,6 @@ export default function WelcomeScreen() {
       }),
     ]).start();
 
-    // Continuous rhythmic pulse for the Confess button
     const breathingPulse = Animated.loop(
       Animated.sequence([
         Animated.parallel([
@@ -149,7 +145,6 @@ export default function WelcomeScreen() {
         backgroundColor={isDark ? "#000000" : "#ffffff"}
       />
 
-      {/* Ambient Gradient Background Layer */}
       <View className="absolute inset-0 pointer-events-none">
         <Svg
           height={SCREEN_HEIGHT}
@@ -159,7 +154,6 @@ export default function WelcomeScreen() {
           <Defs>
             {isDark ? (
               <>
-                {/* Dark Theme: Deep Black with Soft Rose / Pink Glow */}
                 <RadialGradient
                   id="ambientGlow"
                   cx="80%"
@@ -186,7 +180,6 @@ export default function WelcomeScreen() {
               </>
             ) : (
               <>
-                {/* Light Theme: Pristine White with Soft Blush Pink Glow */}
                 <RadialGradient
                   id="ambientGlow"
                   cx="85%"
@@ -237,7 +230,6 @@ export default function WelcomeScreen() {
         </Svg>
       </View>
 
-      {/* Main Foreground Content */}
       <SafeAreaView className="flex-1">
         <ScrollView
           contentContainerStyle={{
@@ -248,7 +240,6 @@ export default function WelcomeScreen() {
           }}
           showsVerticalScrollIndicator={false}
         >
-          {/* Top Header: Anonymity Badge + Campus + Theme Switcher */}
           <Animated.View
             style={{
               opacity: contentFade,
@@ -256,7 +247,6 @@ export default function WelcomeScreen() {
             }}
             className="flex-row items-center justify-between pt-1"
           >
-            {/* 100% Anonymous Tag */}
             <View
               className={`flex-row items-center gap-1.5 px-3 py-1.5 rounded-full border ${
                 isDark
@@ -275,7 +265,6 @@ export default function WelcomeScreen() {
             </View>
 
             <View className="flex-row items-center gap-2">
-              {/* Campus Selector Chip */}
               <TouchableOpacity
                 onPress={() => router.push("/campus-select?mode=change")}
                 className={`flex-row items-center gap-1.5 px-3 py-1.5 rounded-full border ${
@@ -295,7 +284,6 @@ export default function WelcomeScreen() {
                 </Text>
               </TouchableOpacity>
 
-              {/* Theme Toggle Button */}
               <TouchableOpacity
                 onPress={toggleTheme}
                 accessibilityLabel="Toggle Light and Dark Theme"
@@ -314,7 +302,6 @@ export default function WelcomeScreen() {
             </View>
           </Animated.View>
 
-          {/* Central Hero: Clear, Legible, High-Contrast Branding & Use Case */}
           <Animated.View
             style={{
               opacity: contentFade,
@@ -322,7 +309,6 @@ export default function WelcomeScreen() {
             }}
             className="items-center my-auto py-6"
           >
-            {/* Subtle Pinkish / Clean Icon Badge */}
             <View
               className={`size-16 rounded-2xl items-center justify-center mb-5 border shadow-sm ${
                 isDark
@@ -337,7 +323,6 @@ export default function WelcomeScreen() {
               />
             </View>
 
-            {/* App Name */}
             <Text
               className={`text-4xl font-extrabold tracking-tight text-center mb-2 ${
                 isDark ? "text-white" : "text-zinc-950"
@@ -346,7 +331,6 @@ export default function WelcomeScreen() {
               Mea Culpa
             </Text>
 
-            {/* Latin Definition Tag */}
             <View
               className={`px-3 py-1 rounded-full border mb-4 ${
                 isDark
@@ -363,7 +347,6 @@ export default function WelcomeScreen() {
               </Text>
             </View>
 
-            {/* Crystal Clear Description of What the App Does */}
             <Text
               className={`text-base text-center max-w-[320px] font-normal leading-relaxed mb-8 ${
                 isDark ? "text-zinc-400" : "text-zinc-600"
@@ -374,9 +357,7 @@ export default function WelcomeScreen() {
               zero identity attached.
             </Text>
 
-            {/* 3 Value & Use-Case Cards */}
             <View className="w-full max-w-[340px] gap-2.5">
-              {/* Card 1: 100% Anonymous */}
               <View
                 className={`flex-row items-center p-3.5 rounded-2xl border ${
                   isDark
@@ -409,7 +390,6 @@ export default function WelcomeScreen() {
                 </View>
               </View>
 
-              {/* Card 2: Campus Community */}
               <View
                 className={`flex-row items-center p-3.5 rounded-2xl border ${
                   isDark
@@ -442,7 +422,6 @@ export default function WelcomeScreen() {
                 </View>
               </View>
 
-              {/* Card 3: Live Reactions */}
               <View
                 className={`flex-row items-center p-3.5 rounded-2xl border ${
                   isDark
@@ -477,7 +456,6 @@ export default function WelcomeScreen() {
             </View>
           </Animated.View>
 
-          {/* Bottom Call To Action: The Animated Pinkish "Confess" Button */}
           <Animated.View
             style={{
               opacity: contentFade,
@@ -486,7 +464,6 @@ export default function WelcomeScreen() {
             className="w-full items-center pb-4 pt-2"
           >
             <View className="relative w-full max-w-[320px] items-center justify-center">
-              {/* Continuous Breathing Glow Halo */}
               <Animated.View
                 style={{
                   transform: [{ scale: pulseAnim }],
@@ -501,7 +478,6 @@ export default function WelcomeScreen() {
                 className="absolute -inset-2 rounded-2xl opacity-60"
               />
 
-              {/* The Pressable CTA Button */}
               <Animated.View
                 style={{
                   transform: [{ scale: buttonScale }],
@@ -517,7 +493,6 @@ export default function WelcomeScreen() {
                     backgroundColor: "#e11d48",
                   }}
                 >
-                  {/* Subtle Pinkish-to-Rose gradient fill */}
                   <View className="absolute inset-0">
                     <Svg height="100%" width="100%">
                       <Defs>

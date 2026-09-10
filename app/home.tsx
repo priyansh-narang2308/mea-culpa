@@ -77,7 +77,6 @@ export default function HomeScreen() {
   const [submitting, setSubmitting] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
 
-  // AlertDialog states
   const [reportTargetPost, setReportTargetPost] = useState<Post | null>(null);
   const [alertInfo, setAlertInfo] = useState<{
     title: string;
@@ -165,7 +164,6 @@ export default function HomeScreen() {
           isDark ? "bg-zinc-900/90 border-zinc-800" : "bg-white border-zinc-200"
         }`}
       >
-        {/* Card Top: Category, Campus, Timestamp, Report */}
         <View className="flex-row items-center justify-between mb-2.5">
           <View className="flex-row items-center gap-2">
             <View
@@ -219,7 +217,6 @@ export default function HomeScreen() {
           </View>
         </View>
 
-        {/* Confession Content */}
         <Text
           className={`text-[15px] leading-relaxed font-normal select-text ${
             isDark ? "text-zinc-100" : "text-zinc-900"
@@ -228,14 +225,12 @@ export default function HomeScreen() {
           {item.content}
         </Text>
 
-        {/* Reaction Bar */}
         <View
           className={`mt-3.5 pt-3 border-t flex-row items-center justify-between ${
             isDark ? "border-zinc-800/80" : "border-zinc-100"
           }`}
         >
           <View className="flex-row items-center gap-2">
-            {/* Heart */}
             <TouchableOpacity
               onPress={() => toggleReaction(item.id, "reaction_heart")}
               className={`flex-row items-center gap-1.5 px-2.5 py-1 rounded-full border transition-all ${
@@ -276,7 +271,6 @@ export default function HomeScreen() {
               </Text>
             </TouchableOpacity>
 
-            {/* Shock / Flame */}
             <TouchableOpacity
               onPress={() => toggleReaction(item.id, "reaction_shock")}
               className={`flex-row items-center gap-1.5 px-2.5 py-1 rounded-full border ${
@@ -312,7 +306,6 @@ export default function HomeScreen() {
               </Text>
             </TouchableOpacity>
 
-            {/* Laugh */}
             <TouchableOpacity
               onPress={() => toggleReaction(item.id, "reaction_laugh")}
               className={`flex-row items-center gap-1.5 px-2.5 py-1 rounded-full border ${
@@ -348,7 +341,6 @@ export default function HomeScreen() {
               </Text>
             </TouchableOpacity>
 
-            {/* Sad */}
             <TouchableOpacity
               onPress={() => toggleReaction(item.id, "reaction_sad")}
               className={`flex-row items-center gap-1.5 px-2.5 py-1 rounded-full border ${
@@ -396,7 +388,6 @@ export default function HomeScreen() {
         backgroundColor={isDark ? "#000000" : "#ffffff"}
       />
 
-      {/* Top Header */}
       <View
         className={`px-4 pt-2 pb-3 border-b flex-row items-center justify-between ${
           isDark ? "bg-black border-zinc-900" : "bg-white border-zinc-200"
@@ -441,7 +432,6 @@ export default function HomeScreen() {
         </View>
 
         <View className="flex-row items-center gap-2">
-          {/* Scope Toggle */}
           <TouchableOpacity
             onPress={() => toggleShowAllCampuses(!showAllCampuses)}
             className={`flex-row items-center gap-1.5 px-3 py-1.5 rounded-full border ${
@@ -473,7 +463,6 @@ export default function HomeScreen() {
             </Text>
           </TouchableOpacity>
 
-          {/* Theme Switcher Button */}
           <TouchableOpacity
             onPress={toggleTheme}
             className={`size-8 rounded-full items-center justify-center border ${
@@ -491,7 +480,6 @@ export default function HomeScreen() {
         </View>
       </View>
 
-      {/* Category Pills */}
       <View className="py-2.5 px-4">
         <FlatList
           data={CATEGORIES}
@@ -529,7 +517,6 @@ export default function HomeScreen() {
         />
       </View>
 
-      {/* Main Feed Content */}
       {loading && posts.length === 0 ? (
         <View className="flex-1 items-center justify-center">
           <ActivityIndicator size="large" color="#f43f5e" />
@@ -601,7 +588,6 @@ export default function HomeScreen() {
         />
       )}
 
-      {/* Floating Confess Button */}
       <View className="absolute bottom-7 right-5">
         <TouchableOpacity
           onPress={() => setComposerOpen(true)}
@@ -615,7 +601,6 @@ export default function HomeScreen() {
         </TouchableOpacity>
       </View>
 
-      {/* Composer Modal */}
       <Modal
         visible={composerOpen}
         animationType="slide"
@@ -630,7 +615,6 @@ export default function HomeScreen() {
                 : "bg-white border-zinc-200"
             }`}
           >
-            {/* Modal Header */}
             <View
               className={`flex-row items-center justify-between pb-3 border-b ${
                 isDark ? "border-zinc-800" : "border-zinc-100"
@@ -662,7 +646,6 @@ export default function HomeScreen() {
               </TouchableOpacity>
             </View>
 
-            {/* Category Selectors */}
             <View className="flex-row items-center gap-2 my-3">
               {(
                 ["confession", "rant", "funny", "advice"] as PostCategory[]
@@ -696,7 +679,6 @@ export default function HomeScreen() {
               })}
             </View>
 
-            {/* Confession Text Input */}
             <TextInput
               value={newContent}
               onChangeText={setNewContent}
@@ -713,7 +695,6 @@ export default function HomeScreen() {
               textAlignVertical="top"
             />
 
-            {/* Action Bar */}
             <View className="flex-row items-center justify-between mt-3">
               <Text
                 className={`text-xs font-mono ${
@@ -749,7 +730,6 @@ export default function HomeScreen() {
         </View>
       </Modal>
 
-      {/* Shadcn / RNR Alert Dialog for Reporting Confession */}
       <AlertDialog
         open={!!reportTargetPost}
         onOpenChange={(open) => {
@@ -802,7 +782,6 @@ export default function HomeScreen() {
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* Shadcn / RNR Alert Dialog for Feedback & Alerts */}
       <AlertDialog
         open={!!alertInfo}
         onOpenChange={(open) => {
