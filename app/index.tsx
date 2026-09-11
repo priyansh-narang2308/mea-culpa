@@ -3,6 +3,12 @@ import { useAppTheme } from "@/lib/theme-manager";
 import { usePostsStore } from "@/stores/usePostsStore";
 import { router } from "expo-router";
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
   ArrowRight,
   EyeOff,
   Flame,
@@ -10,6 +16,7 @@ import {
   Lock,
   MapPin,
   Moon,
+  MoreVertical,
   School,
   Sun,
 } from "lucide-react-native";
@@ -265,40 +272,57 @@ export default function WelcomeScreen() {
             </View>
 
             <View className="flex-row items-center gap-2">
-              <TouchableOpacity
-                onPress={() => router.push("/campus-select?mode=change")}
-                className={`flex-row items-center gap-1.5 px-3 py-1.5 rounded-full border ${
-                  isDark
-                    ? "bg-zinc-900/90 border-zinc-800"
-                    : "bg-zinc-100/90 border-zinc-200"
-                }`}
-              >
-                <MapPin size={12} color={isDark ? "#fb7185" : "#e11d48"} />
-                <Text
-                  className={`text-[11px] font-medium max-w-[110px] ${
-                    isDark ? "text-zinc-300" : "text-zinc-800"
-                  }`}
-                  numberOfLines={1}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <TouchableOpacity
+                    className={`size-9 rounded-full items-center justify-center border ${
+                      isDark
+                        ? "bg-zinc-900 border-zinc-800"
+                        : "bg-zinc-100 border-zinc-200"
+                    }`}
+                  >
+                    <MoreVertical size={16} color={isDark ? "#d4d4d8" : "#3f3f46"} />
+                  </TouchableOpacity>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent
+                  align="end"
+                  className={`w-56 mt-2 ${isDark ? "bg-zinc-900 border-zinc-800" : "bg-white border-zinc-200"}`}
                 >
-                  {myCampus || "Select Campus"}
-                </Text>
-              </TouchableOpacity>
+                  <DropdownMenuItem
+                    onPress={() => router.push("/campus-select?mode=change")}
+                    className="flex-row items-center gap-3 py-3"
+                  >
+                    <MapPin size={16} color={isDark ? "#a1a1aa" : "#52525b"} />
+                    <View>
+                      <Text className={`font-medium ${isDark ? "text-zinc-100" : "text-zinc-900"}`}>
+                        Change Campus
+                      </Text>
+                      <Text className={`text-xs ${isDark ? "text-zinc-500" : "text-zinc-400"}`}>
+                        {myCampus || "Select Campus"}
+                      </Text>
+                    </View>
+                  </DropdownMenuItem>
 
-              <TouchableOpacity
-                onPress={toggleTheme}
-                accessibilityLabel="Toggle Light and Dark Theme"
-                className={`size-8 rounded-full items-center justify-center border ${
-                  isDark
-                    ? "bg-zinc-900 border-zinc-800"
-                    : "bg-rose-50 border-rose-200"
-                }`}
-              >
-                {isDark ? (
-                  <Sun size={15} color="#fb7185" />
-                ) : (
-                  <Moon size={15} color="#e11d48" />
-                )}
-              </TouchableOpacity>
+                  <DropdownMenuItem
+                    onPress={toggleTheme}
+                    className="flex-row items-center gap-3 py-3"
+                  >
+                    {isDark ? (
+                      <Sun size={16} color="#fb7185" />
+                    ) : (
+                      <Moon size={16} color="#e11d48" />
+                    )}
+                    <View>
+                      <Text className={`font-medium ${isDark ? "text-zinc-100" : "text-zinc-900"}`}>
+                        {isDark ? "Light Mode" : "Dark Mode"}
+                      </Text>
+                      <Text className={`text-xs ${isDark ? "text-zinc-500" : "text-zinc-400"}`}>
+                        Toggle app theme
+                      </Text>
+                    </View>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </View>
           </Animated.View>
 

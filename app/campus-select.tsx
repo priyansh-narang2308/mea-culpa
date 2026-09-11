@@ -7,12 +7,13 @@ import {
   ArrowRight,
   Check,
   Globe,
+  Plus,
   School,
   Search,
   Sparkles,
   X,
 } from "lucide-react-native";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import {
   FlatList,
   KeyboardAvoidingView,
@@ -31,6 +32,7 @@ export default function CampusSelectScreen() {
   const isChanging = mode === "change";
 
   const [search, setSearch] = useState("");
+  const searchInputRef = useRef<TextInput>(null);
   const myCampus = usePostsStore((state) => state.myCampus);
   const setMyCampus = usePostsStore((state) => state.setMyCampus);
 
@@ -118,6 +120,7 @@ export default function CampusSelectScreen() {
             >
               <Search size={18} color={isDark ? "#71717a" : "#a1a1aa"} />
               <TextInput
+                ref={searchInputRef}
                 value={search}
                 onChangeText={setSearch}
                 placeholder="e.g. PES University"
@@ -259,6 +262,40 @@ export default function CampusSelectScreen() {
                 </TouchableOpacity>
               );
             }}
+            ListFooterComponent={() => (
+              <TouchableOpacity
+                onPress={() => searchInputRef.current?.focus()}
+                className={`flex-row items-center gap-3 p-3.5 mt-2 mb-6 rounded-2xl border border-dashed ${
+                  isDark
+                    ? "bg-zinc-900/40 border-zinc-700/60"
+                    : "bg-zinc-50 border-zinc-300"
+                }`}
+              >
+                <View
+                  className={`size-8 rounded-lg items-center justify-center ${
+                    isDark ? "bg-zinc-800" : "bg-zinc-200/60"
+                  }`}
+                >
+                  <Plus size={16} color={isDark ? "#a1a1aa" : "#52525b"} />
+                </View>
+                <View>
+                  <Text
+                    className={`text-sm font-medium ${
+                      isDark ? "text-zinc-300" : "text-zinc-700"
+                    }`}
+                  >
+                    Not listed? Type your own
+                  </Text>
+                  <Text
+                    className={`text-xs ${
+                      isDark ? "text-zinc-500" : "text-zinc-400"
+                    }`}
+                  >
+                    Add your campus in the search bar
+                  </Text>
+                </View>
+              </TouchableOpacity>
+            )}
           />
         </View>
       </KeyboardAvoidingView>
