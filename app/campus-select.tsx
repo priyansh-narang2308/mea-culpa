@@ -14,7 +14,6 @@ import {
   Plus,
   School,
   Search,
-  Sparkles,
   X,
 } from "lucide-react-native";
 import { useEffect, useRef, useState } from "react";
@@ -174,7 +173,9 @@ export default function CampusSelectScreen() {
                     onPress={handleAddCustomCampus}
                     className="bg-rose-600 px-3 py-1.5 rounded-xl flex-row items-center gap-1"
                   >
-                    <Text className="text-xs font-semibold text-white">Add</Text>
+                    <Text className="text-xs font-semibold text-white">
+                      Add
+                    </Text>
                   </TouchableOpacity>
                 )}
               </View>
@@ -242,7 +243,7 @@ export default function CampusSelectScreen() {
                     isDark ? "text-white" : "text-zinc-900"
                   }`}
                 >
-                  All Campuses (Global)
+                  All Campuses
                 </Text>
                 <Text
                   className={`text-xs ${
@@ -266,7 +267,6 @@ export default function CampusSelectScreen() {
             >
               Popular Universities
             </Text>
-            <Sparkles size={14} color={isDark ? "#fb7185" : "#e11d48"} />
           </View>
 
           <FlatList

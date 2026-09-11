@@ -49,6 +49,9 @@ import {
   TextInput,
   TouchableOpacity,
   View,
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -621,14 +624,22 @@ export default function HomeScreen() {
         transparent
         onRequestClose={() => setComposerOpen(false)}
       >
-        <View className="flex-1 justify-end bg-black/70">
-          <View
-            className={`rounded-t-3xl border-t p-5 pb-8 ${
-              isDark
-                ? "bg-zinc-900 border-zinc-800"
-                : "bg-white border-zinc-200"
-            }`}
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : undefined}
+          className="flex-1"
+        >
+          <Pressable 
+            className="flex-1 justify-end bg-black/70"
+            onPress={() => setComposerOpen(false)}
           >
+            <Pressable 
+              onPress={(e) => e.stopPropagation()}
+              className={`rounded-t-3xl border-t p-5 pb-8 ${
+                isDark
+                  ? "bg-zinc-900 border-zinc-800"
+                  : "bg-white border-zinc-200"
+              }`}
+            >
             <View
               className={`flex-row items-center justify-between pb-3 border-b ${
                 isDark ? "border-zinc-800" : "border-zinc-100"
@@ -699,6 +710,7 @@ export default function HomeScreen() {
               maxLength={200}
               multiline
               numberOfLines={4}
+              disableFullscreenUI={true}
               placeholder="What's on your mind? Spill the tea anonymously..."
               placeholderTextColor={isDark ? "#71717a" : "#a1a1aa"}
               className={`rounded-2xl p-4 text-base min-h-[110px] border ${
@@ -739,8 +751,9 @@ export default function HomeScreen() {
                 )}
               </TouchableOpacity>
             </View>
-          </View>
-        </View>
+            </Pressable>
+          </Pressable>
+        </KeyboardAvoidingView>
       </Modal>
 
       <AlertDialog
