@@ -81,6 +81,41 @@ function formatRelativeTime(isoString: string): string {
   }
 }
 
+function getCategoryColor(category: PostCategory, isDark: boolean) {
+  switch (category) {
+    case "confession":
+      return {
+        bg: isDark ? "bg-rose-950/40" : "bg-rose-50",
+        border: isDark ? "border-rose-900/50" : "border-rose-200",
+        text: isDark ? "text-rose-300" : "text-rose-600",
+      };
+    case "rant":
+      return {
+        bg: isDark ? "bg-orange-950/40" : "bg-orange-50",
+        border: isDark ? "border-orange-900/50" : "border-orange-200",
+        text: isDark ? "text-orange-300" : "text-orange-600",
+      };
+    case "funny":
+      return {
+        bg: isDark ? "bg-amber-950/40" : "bg-amber-50",
+        border: isDark ? "border-amber-900/50" : "border-amber-200",
+        text: isDark ? "text-amber-300" : "text-amber-600",
+      };
+    case "advice":
+      return {
+        bg: isDark ? "bg-sky-950/40" : "bg-sky-50",
+        border: isDark ? "border-sky-900/50" : "border-sky-200",
+        text: isDark ? "text-sky-300" : "text-sky-600",
+      };
+    default:
+      return {
+        bg: isDark ? "bg-zinc-800" : "bg-zinc-100",
+        border: isDark ? "border-zinc-700" : "border-zinc-200",
+        text: isDark ? "text-zinc-300" : "text-zinc-600",
+      };
+  }
+}
+
 export default function HomeScreen() {
   const { isDark, toggleTheme } = useAppTheme();
   const [selectedCategory, setSelectedCategory] = useState<
@@ -146,6 +181,7 @@ export default function HomeScreen() {
   const renderPost = ({ item }: { item: Post }) => {
     const activeReaction = userReactions[item.id];
     const alreadyReported = reportedPostIds.includes(item.id);
+    const catColor = getCategoryColor(item.category, isDark);
 
     const handleReact = (
       type:
@@ -175,16 +211,10 @@ export default function HomeScreen() {
         <View className="flex-row items-center justify-between mb-2.5">
           <View className="flex-row items-center gap-2 flex-1 mr-2">
             <View
-              className={`rounded-full px-2.5 py-0.5 border ${
-                isDark
-                  ? "bg-rose-950/40 border-rose-900/50"
-                  : "bg-rose-50 border-rose-200"
-              }`}
+              className={`rounded-full px-2.5 py-0.5 border ${catColor.bg} ${catColor.border}`}
             >
               <Text
-                className={`text-[11px] font-semibold uppercase tracking-wider ${
-                  isDark ? "text-rose-300" : "text-rose-600"
-                }`}
+                className={`text-[11px] font-semibold uppercase tracking-wider ${catColor.text}`}
               >
                 {item.category}
               </Text>
