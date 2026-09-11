@@ -40,7 +40,9 @@ export const useRepliesStore = create<RepliesStore>((set, get) => ({
 
   addReply: async (postId: string, content: string) => {
     const trimmed = content.trim();
-    if (!trimmed) return { error: "Reply cannot be empty" };
+    if (trimmed.length === 0) return { error: "Reply cannot be empty" };
+    if (trimmed.length > 200)
+      return { error: "Reply cannot be greater than 200" };
 
     const { data, error } = await supabase
       .from("replies")
@@ -59,7 +61,6 @@ export const useRepliesStore = create<RepliesStore>((set, get) => ({
     if (data) {
       set((state) => {
         const existing = state.repliesByPost[postId] || [];
-        // Prevent duplicate if realtime already inserted it
         if (existing.some((r) => r.id === data.id)) return state;
 
         return {
