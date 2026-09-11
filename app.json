@@ -8,9 +8,11 @@
     "scheme": "meaculpa",
     "userInterfaceStyle": "automatic",
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.priyansh230888.mea-culpa"
     },
     "android": {
+      "package": "com.priyansh230888.meaculpa",
       "adaptiveIcon": {
         "backgroundColor": "#ffe4e6",
         "foregroundImage": "./assets/images/logo1.png"
