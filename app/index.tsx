@@ -31,6 +31,7 @@ import {
   Text,
   TouchableOpacity,
   View,
+  Image,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Svg, {
@@ -333,19 +334,12 @@ export default function WelcomeScreen() {
             }}
             className="items-center my-auto py-6"
           >
-            <View
-              className={`size-16 rounded-2xl items-center justify-center mb-5 border shadow-sm ${
-                isDark
-                  ? "bg-zinc-900/80 border-rose-500/30"
-                  : "bg-rose-50 border-rose-200"
+            <Image
+              source={require("../assets/images/logo1.png")}
+              className={`size-16 rounded-2xl mb-5 border shadow-sm ${
+                isDark ? "border-zinc-800" : "border-zinc-200"
               }`}
-            >
-              <Heart
-                size={30}
-                color={isDark ? "#fb7185" : "#e11d48"}
-                fill={isDark ? "#fb7185" : "#e11d48"}
-              />
-            </View>
+            />
 
             <Text
               className={`text-4xl font-extrabold tracking-tight text-center mb-2 ${
