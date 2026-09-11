@@ -21,6 +21,7 @@ import { getSelectedCampus } from "@/lib/campus-storage";
 import { useAppTheme } from "@/lib/theme-manager";
 import { usePostsStore } from "@/stores/usePostsStore";
 import { Post, PostCategory } from "@/types/post";
+import { BlurView } from "expo-blur";
 import { router } from "expo-router";
 import {
   ArrowLeft,
@@ -42,16 +43,16 @@ import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
+  KeyboardAvoidingView,
   Modal,
+  Platform,
+  Pressable,
   RefreshControl,
   StatusBar,
   Text,
   TextInput,
   TouchableOpacity,
   View,
-  KeyboardAvoidingView,
-  Platform,
-  Pressable,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -624,133 +625,138 @@ export default function HomeScreen() {
         transparent
         onRequestClose={() => setComposerOpen(false)}
       >
+        <BlurView
+          intensity={isDark ? 30 : 15}
+          tint={isDark ? "dark" : "light"}
+          style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0 }}
+        />
         <KeyboardAvoidingView
           behavior={Platform.OS === "ios" ? "padding" : undefined}
           className="flex-1"
         >
-          <Pressable 
-            className="flex-1 justify-end bg-black/70"
+          <Pressable
+            className="flex-1 justify-end"
             onPress={() => setComposerOpen(false)}
           >
-            <Pressable 
+            <Pressable
               onPress={(e) => e.stopPropagation()}
-              className={`rounded-t-3xl border-t p-5 pb-8 ${
+              className={`rounded-t-3xl border-t p-5 pb-8 shadow-2xl ${
                 isDark
-                  ? "bg-zinc-900 border-zinc-800"
-                  : "bg-white border-zinc-200"
+                  ? "bg-zinc-900 border-zinc-800 shadow-black/50"
+                  : "bg-white border-zinc-200 shadow-zinc-500/20"
               }`}
             >
-            <View
-              className={`flex-row items-center justify-between pb-3 border-b ${
-                isDark ? "border-zinc-800" : "border-zinc-100"
-              }`}
-            >
-              <View>
-                <Text
-                  className={`text-base font-bold ${
-                    isDark ? "text-white" : "text-zinc-950"
-                  }`}
-                >
-                  Post Anonymous Confession
-                </Text>
-                <Text
-                  className={`text-xs ${
-                    isDark ? "text-zinc-400" : "text-zinc-500"
-                  }`}
-                >
-                  Posting to {myCampus || "General"}
-                </Text>
-              </View>
-              <TouchableOpacity
-                onPress={() => setComposerOpen(false)}
-                className={`size-8 rounded-full items-center justify-center ${
-                  isDark ? "bg-zinc-800" : "bg-zinc-100"
+              <View
+                className={`flex-row items-center justify-between pb-3 border-b ${
+                  isDark ? "border-zinc-800" : "border-zinc-100"
                 }`}
               >
-                <X size={16} color={isDark ? "#a1a1aa" : "#71717a"} />
-              </TouchableOpacity>
-            </View>
-
-            <View className="flex-row items-center gap-2 my-3">
-              {(
-                ["confession", "rant", "funny", "advice"] as PostCategory[]
-              ).map((cat) => {
-                const isSelected = newCategory === cat;
-                return (
-                  <TouchableOpacity
-                    key={cat}
-                    onPress={() => setNewCategory(cat)}
-                    className={`flex-1 py-2 rounded-xl border items-center ${
-                      isSelected
-                        ? "bg-rose-600 border-rose-500"
-                        : isDark
-                          ? "bg-zinc-800 border-zinc-700"
-                          : "bg-zinc-100 border-zinc-200"
+                <View>
+                  <Text
+                    className={`text-base font-bold ${
+                      isDark ? "text-white" : "text-zinc-950"
                     }`}
                   >
-                    <Text
-                      className={`text-xs font-semibold capitalize ${
+                    Post Anonymous Confession
+                  </Text>
+                  <Text
+                    className={`text-xs ${
+                      isDark ? "text-zinc-400" : "text-zinc-500"
+                    }`}
+                  >
+                    Posting to {myCampus || "General"}
+                  </Text>
+                </View>
+                <TouchableOpacity
+                  onPress={() => setComposerOpen(false)}
+                  className={`size-8 rounded-full items-center justify-center ${
+                    isDark ? "bg-zinc-800" : "bg-zinc-100"
+                  }`}
+                >
+                  <X size={16} color={isDark ? "#a1a1aa" : "#71717a"} />
+                </TouchableOpacity>
+              </View>
+
+              <View className="flex-row items-center gap-2 my-3">
+                {(
+                  ["confession", "rant", "funny", "advice"] as PostCategory[]
+                ).map((cat) => {
+                  const isSelected = newCategory === cat;
+                  return (
+                    <TouchableOpacity
+                      key={cat}
+                      onPress={() => setNewCategory(cat)}
+                      className={`flex-1 py-2 rounded-xl border items-center ${
                         isSelected
-                          ? "text-white"
+                          ? "bg-rose-600 border-rose-500"
                           : isDark
-                            ? "text-zinc-300"
-                            : "text-zinc-700"
+                            ? "bg-zinc-800 border-zinc-700"
+                            : "bg-zinc-100 border-zinc-200"
                       }`}
                     >
-                      {cat}
-                    </Text>
-                  </TouchableOpacity>
-                );
-              })}
-            </View>
+                      <Text
+                        className={`text-xs font-semibold capitalize ${
+                          isSelected
+                            ? "text-white"
+                            : isDark
+                              ? "text-zinc-300"
+                              : "text-zinc-700"
+                        }`}
+                      >
+                        {cat}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
 
-            <TextInput
-              value={newContent}
-              onChangeText={setNewContent}
-              maxLength={200}
-              multiline
-              numberOfLines={4}
-              disableFullscreenUI={true}
-              placeholder="What's on your mind? Spill the tea anonymously..."
-              placeholderTextColor={isDark ? "#71717a" : "#a1a1aa"}
-              className={`rounded-2xl p-4 text-base min-h-[110px] border ${
-                isDark
-                  ? "bg-black text-zinc-100 border-zinc-800"
-                  : "bg-zinc-50 text-zinc-900 border-zinc-200"
-              }`}
-              textAlignVertical="top"
-            />
+              <TextInput
+                value={newContent}
+                onChangeText={setNewContent}
+                maxLength={200}
+                multiline
+                numberOfLines={4}
+                disableFullscreenUI={true}
+                placeholder="What's on your mind? Spill the tea anonymously..."
+                placeholderTextColor={isDark ? "#71717a" : "#a1a1aa"}
+                className={`rounded-2xl p-4 text-base min-h-[110px] border ${
+                  isDark
+                    ? "bg-black text-zinc-100 border-zinc-800"
+                    : "bg-zinc-50 text-zinc-900 border-zinc-200"
+                }`}
+                textAlignVertical="top"
+              />
 
-            <View className="flex-row items-center justify-between mt-3">
-              <Text
-                className={`text-xs font-mono ${
-                  isDark ? "text-zinc-500" : "text-zinc-400"
-                }`}
-              >
-                {newContent.length}/200
-              </Text>
-              <TouchableOpacity
-                onPress={handleCreatePost}
-                disabled={submitting || !newContent.trim()}
-                className={`flex-row items-center gap-2 px-5 py-2.5 rounded-full ${
-                  newContent.trim() && !submitting
-                    ? "bg-rose-600 shadow-md shadow-rose-500/30"
-                    : isDark
-                      ? "bg-zinc-800 opacity-60"
-                      : "bg-zinc-200 opacity-60"
-                }`}
-              >
-                {submitting ? (
-                  <ActivityIndicator size="small" color="#ffffff" />
-                ) : (
-                  <>
-                    <Text className="text-xs font-bold text-white uppercase tracking-wider">
-                      Publish
-                    </Text>
-                  </>
-                )}
-              </TouchableOpacity>
-            </View>
+              <View className="flex-row items-center justify-between mt-3">
+                <Text
+                  className={`text-xs font-mono ${
+                    isDark ? "text-zinc-500" : "text-zinc-400"
+                  }`}
+                >
+                  {newContent.length}/200
+                </Text>
+                <TouchableOpacity
+                  onPress={handleCreatePost}
+                  disabled={submitting || !newContent.trim()}
+                  className={`flex-row items-center gap-2 px-5 py-2.5 rounded-full ${
+                    newContent.trim() && !submitting
+                      ? "bg-rose-600 shadow-md shadow-rose-500/30"
+                      : isDark
+                        ? "bg-zinc-800 opacity-60"
+                        : "bg-zinc-200 opacity-60"
+                  }`}
+                >
+                  {submitting ? (
+                    <ActivityIndicator size="small" color="#ffffff" />
+                  ) : (
+                    <>
+                      <Text className="text-xs font-bold text-white uppercase tracking-wider">
+                        Publish
+                      </Text>
+                    </>
+                  )}
+                </TouchableOpacity>
+              </View>
             </Pressable>
           </Pressable>
         </KeyboardAvoidingView>
