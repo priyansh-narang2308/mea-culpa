@@ -16,7 +16,7 @@ const DialogPortal = DialogPrimitive.Portal;
 
 const DialogClose = DialogPrimitive.Close;
 
-const FullWindowOverlay = Platform.OS === 'ios' ? RNFullWindowOverlay : React.Fragment;
+const FullWindowOverlay = React.Fragment;
 
 function DialogOverlay({
   className,

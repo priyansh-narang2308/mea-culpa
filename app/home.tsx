@@ -203,7 +203,8 @@ export default function HomeScreen() {
     };
 
     return (
-      <View
+      <Pressable
+        onPress={() => router.push(`/post/${item.id}`)}
         className={`mb-4 overflow-hidden rounded-[20px] border p-4 shadow-sm ${
           isDark ? "bg-zinc-900/90 border-zinc-800" : "bg-white border-zinc-200"
         }`}
@@ -421,7 +422,7 @@ export default function HomeScreen() {
             </TouchableOpacity>
           </View>
         </View>
-      </View>
+      </Pressable>
     );
   };
 

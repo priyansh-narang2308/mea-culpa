@@ -20,6 +20,7 @@ import { useEffect, useRef, useState } from "react";
 import {
   FlatList,
   KeyboardAvoidingView,
+  Modal,
   Platform,
   StatusBar,
   Text,
@@ -132,92 +133,151 @@ export default function CampusSelectScreen() {
                 Search or enter custom university
               </Text>
               <TouchableOpacity
-                onPress={() => setIsAddingCustom(!isAddingCustom)}
+                onPress={() => setIsAddingCustom(true)}
                 className={`size-6 items-center justify-center rounded-full border ${
                   isDark
                     ? "bg-zinc-800 border-zinc-700"
                     : "bg-zinc-100 border-zinc-200"
                 }`}
               >
-                {isAddingCustom ? (
-                  <X size={12} color={isDark ? "#a1a1aa" : "#52525b"} />
-                ) : (
-                  <Plus size={12} color={isDark ? "#a1a1aa" : "#52525b"} />
-                )}
+                <Plus size={12} color={isDark ? "#a1a1aa" : "#52525b"} />
               </TouchableOpacity>
             </View>
 
-            {isAddingCustom ? (
+            <View
+              className={`flex-row items-center rounded-2xl px-3.5 py-3 gap-2.5 border ${
+                isDark
+                  ? "bg-zinc-900/90 border-zinc-800"
+                  : "bg-zinc-50 border-zinc-200"
+              }`}
+            >
+              <Search size={18} color={isDark ? "#71717a" : "#a1a1aa"} />
+              <TextInput
+                ref={searchInputRef}
+                value={search}
+                onChangeText={setSearch}
+                placeholder="e.g. PES University"
+                placeholderTextColor={isDark ? "#71717a" : "#a1a1aa"}
+                className={`flex-1 text-sm font-medium ${
+                  isDark ? "text-white" : "text-zinc-900"
+                }`}
+                returnKeyType="done"
+                onSubmitEditing={() => {
+                  if (search.trim()) {
+                    handleSelectCampus(search.trim());
+                  }
+                }}
+              />
+              {search.trim().length > 0 && (
+                <TouchableOpacity
+                  onPress={() => handleSelectCampus(search.trim())}
+                  className="bg-rose-600 px-3 py-1.5 rounded-xl flex-row items-center gap-1"
+                >
+                  <Text className="text-xs font-semibold text-white">
+                    Select
+                  </Text>
+                  <ArrowRight size={12} color="#ffffff" />
+                </TouchableOpacity>
+              )}
+            </View>
+          </View>
+
+          <Modal
+            visible={isAddingCustom}
+            transparent={true}
+            animationType="fade"
+            onRequestClose={() => setIsAddingCustom(false)}
+          >
+            <KeyboardAvoidingView
+              behavior={Platform.OS === "ios" ? "padding" : "height"}
+              className="flex-1 justify-center items-center bg-black/60 px-5"
+            >
               <View
-                className={`flex-row items-center rounded-2xl px-3.5 py-3 gap-2.5 border ${
-                  isDark
-                    ? "bg-rose-950/30 border-rose-900/50"
-                    : "bg-rose-50/50 border-rose-200"
+                className={`w-full max-w-sm rounded-[24px] p-6 shadow-2xl ${
+                  isDark ? "bg-zinc-950 border border-zinc-900" : "bg-white"
                 }`}
               >
-                <Plus size={18} color={isDark ? "#fb7185" : "#e11d48"} />
+                <Text
+                  className={`text-xl font-bold tracking-tight mb-2 ${
+                    isDark ? "text-white" : "text-black"
+                  }`}
+                >
+                  Add Custom University
+                </Text>
+                <Text
+                  className={`text-sm mb-5 ${
+                    isDark ? "text-zinc-400" : "text-zinc-500"
+                  }`}
+                >
+                  Can't find your university? Add it here to start seeing and
+                  posting confessions for your campus.
+                </Text>
+
                 <TextInput
                   value={newCampusInput}
                   onChangeText={setNewCampusInput}
-                  placeholder="Type new university name..."
-                  placeholderTextColor={isDark ? "#71717a" : "#a1a1aa"}
-                  className={`flex-1 text-sm font-medium ${
-                    isDark ? "text-white" : "text-zinc-900"
-                  }`}
-                  returnKeyType="done"
-                  onSubmitEditing={handleAddCustomCampus}
-                  autoFocus
-                />
-                {newCampusInput.trim().length > 0 && (
-                  <TouchableOpacity
-                    onPress={handleAddCustomCampus}
-                    className="bg-rose-600 px-3 py-1.5 rounded-xl flex-row items-center gap-1"
-                  >
-                    <Text className="text-xs font-semibold text-white">
-                      Add
-                    </Text>
-                  </TouchableOpacity>
-                )}
-              </View>
-            ) : (
-              <View
-                className={`flex-row items-center rounded-2xl px-3.5 py-3 gap-2.5 border ${
-                  isDark
-                    ? "bg-zinc-900/90 border-zinc-800"
-                    : "bg-zinc-50 border-zinc-200"
-                }`}
-              >
-                <Search size={18} color={isDark ? "#71717a" : "#a1a1aa"} />
-                <TextInput
-                  ref={searchInputRef}
-                  value={search}
-                  onChangeText={setSearch}
                   placeholder="e.g. PES University"
                   placeholderTextColor={isDark ? "#71717a" : "#a1a1aa"}
-                  className={`flex-1 text-sm font-medium ${
-                    isDark ? "text-white" : "text-zinc-900"
+                  className={`text-base font-medium rounded-2xl px-4 py-3.5 border ${
+                    isDark
+                      ? "bg-zinc-900/90 border-zinc-800 text-white"
+                      : "bg-zinc-50 border-zinc-200 text-zinc-900"
                   }`}
                   returnKeyType="done"
                   onSubmitEditing={() => {
-                    if (search.trim()) {
-                      handleSelectCampus(search.trim());
-                    }
+                    setIsAddingCustom(false);
+                    handleAddCustomCampus();
                   }}
+                  autoFocus
                 />
-                {search.trim().length > 0 && (
+
+                <View className="flex-row gap-3 pt-5 mt-1">
                   <TouchableOpacity
-                    onPress={() => handleSelectCampus(search.trim())}
-                    className="bg-rose-600 px-3 py-1.5 rounded-xl flex-row items-center gap-1"
+                    onPress={() => setIsAddingCustom(false)}
+                    className={`flex-1 py-3.5 rounded-xl items-center justify-center border ${
+                      isDark
+                        ? "bg-zinc-900 border-zinc-800"
+                        : "bg-zinc-100 border-zinc-200"
+                    }`}
                   >
-                    <Text className="text-xs font-semibold text-white">
-                      Select
+                    <Text
+                      className={`text-sm font-bold ${
+                        isDark ? "text-zinc-300" : "text-zinc-700"
+                      }`}
+                    >
+                      Cancel
                     </Text>
-                    <ArrowRight size={12} color="#ffffff" />
                   </TouchableOpacity>
-                )}
+                  <TouchableOpacity
+                    disabled={!newCampusInput.trim()}
+                    onPress={() => {
+                      setIsAddingCustom(false);
+                      handleAddCustomCampus();
+                    }}
+                    className={`flex-1 py-3.5 rounded-xl items-center justify-center ${
+                      newCampusInput.trim()
+                        ? "bg-rose-600 shadow-sm"
+                        : isDark
+                          ? "bg-rose-950/30"
+                          : "bg-rose-50"
+                    }`}
+                  >
+                    <Text
+                      className={`text-sm font-bold ${
+                        newCampusInput.trim()
+                          ? "text-white"
+                          : isDark
+                            ? "text-rose-900"
+                            : "text-rose-300"
+                      }`}
+                    >
+                      Add
+                    </Text>
+                  </TouchableOpacity>
+                </View>
               </View>
-            )}
-          </View>
+            </KeyboardAvoidingView>
+          </Modal>
 
           <TouchableOpacity
             onPress={() => handleSelectCampus("All Campuses")}
