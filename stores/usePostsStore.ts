@@ -191,6 +191,7 @@ export const usePostsStore = create<PostsState>()((set, get) => {
         .insert({
           content: trimmed,
           campus: myCampus ?? "general",
+          category: category,
         })
         .select()
         .single();
