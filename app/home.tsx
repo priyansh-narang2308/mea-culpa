@@ -17,12 +17,12 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Text as RNRText } from "@/components/ui/text";
-import * as Haptics from "expo-haptics";
 import { getSelectedCampus } from "@/lib/campus-storage";
 import { useAppTheme } from "@/lib/theme-manager";
 import { usePostsStore } from "@/stores/usePostsStore";
 import { Post, PostCategory } from "@/types/post";
 import { BlurView } from "expo-blur";
+import * as Haptics from "expo-haptics";
 import { router } from "expo-router";
 import {
   ArrowLeft,
@@ -88,6 +88,9 @@ export default function HomeScreen() {
   const [composerOpen, setComposerOpen] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [reportTargetPost, setReportTargetPost] = useState<Post | null>(null);
+  const [alreadyReportedPost, setAlreadyReportedPost] = useState<Post | null>(
+    null,
+  );
 
   const {
     posts,
@@ -97,6 +100,7 @@ export default function HomeScreen() {
     myCampus,
     showAllCampuses,
     userReactions,
+    reportedPostIds,
     fetchPosts,
     loadMorePosts,
     toggleReaction,
@@ -140,13 +144,24 @@ export default function HomeScreen() {
 
   const renderPost = ({ item }: { item: Post }) => {
     const activeReaction = userReactions[item.id];
+    const alreadyReported = reportedPostIds.includes(item.id);
 
-    const handleReact = (type: "reaction_heart" | "reaction_shock" | "reaction_laugh" | "reaction_sad") => {
+    const handleReact = (
+      type:
+        | "reaction_heart"
+        | "reaction_shock"
+        | "reaction_laugh"
+        | "reaction_sad",
+    ) => {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
       toggleReaction(item.id, type);
     };
 
     const handleReport = () => {
+      if (alreadyReported) {
+        setAlreadyReportedPost(item);
+        return;
+      }
       setReportTargetPost(item);
     };
 
@@ -157,7 +172,7 @@ export default function HomeScreen() {
         }`}
       >
         <View className="flex-row items-center justify-between mb-2.5">
-          <View className="flex-row items-center gap-2">
+          <View className="flex-row items-center gap-2 flex-1 mr-2">
             <View
               className={`rounded-full px-2.5 py-0.5 border ${
                 isDark
@@ -174,15 +189,16 @@ export default function HomeScreen() {
               </Text>
             </View>
 
-            {showAllCampuses && item.campus && (
+            {item.campus && (
               <View
-                className={`flex-row items-center gap-1 rounded-full px-2 py-0.5 ${
+                className={`flex-row items-center gap-1 rounded-full px-2 py-0.5 shrink ${
                   isDark ? "bg-zinc-800" : "bg-zinc-100"
                 }`}
               >
                 <MapPin size={10} color={isDark ? "#a1a1aa" : "#71717a"} />
                 <Text
-                  className={`text-[10px] font-medium ${
+                  numberOfLines={1}
+                  className={`text-[10px] font-medium shrink ${
                     isDark ? "text-zinc-300" : "text-zinc-700"
                   }`}
                 >
@@ -204,7 +220,12 @@ export default function HomeScreen() {
               onPress={handleReport}
               hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
             >
-              <Flag size={14} color={isDark ? "#71717a" : "#a1a1aa"} />
+              <Flag
+                size={14}
+                color={
+                  alreadyReported ? "#ef4444" : isDark ? "#71717a" : "#a1a1aa"
+                }
+              />
             </TouchableOpacity>
           </View>
         </View>
@@ -646,15 +667,41 @@ export default function HomeScreen() {
               onPress={async () => {
                 if (reportTargetPost) {
                   Haptics.notificationAsync(
-                    Haptics.NotificationFeedbackType.Warning
+                    Haptics.NotificationFeedbackType.Warning,
                   );
                   await reportPost(reportTargetPost.id);
                   setReportTargetPost(null);
                 }
               }}
-              className="bg-red-500"
+              style={{ backgroundColor: "#ef4444" }}
+              className="active:opacity-80"
             >
               <RNRText className="text-white">Report</RNRText>
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+      <AlertDialog
+        open={!!alreadyReportedPost}
+        onOpenChange={(open) => {
+          if (!open) setAlreadyReportedPost(null);
+        }}
+      >
+        <AlertDialogContent className="w-[90%] max-w-[400px]">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Already Reported</AlertDialogTitle>
+            <AlertDialogDescription>
+              You have already flagged this post for review.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogAction
+              onPress={() => setAlreadyReportedPost(null)}
+              className={isDark ? "bg-white" : "bg-black"}
+            >
+              <RNRText className={isDark ? "text-black" : "text-white"}>
+                OK
+              </RNRText>
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

@@ -1,6 +1,6 @@
-import { PortalHost } from "@rn-primitives/portal";
-import { Stack } from "expo-router";
 import "../global.css";
+import { Stack } from "expo-router";
+import { PortalHost } from "@rn-primitives/portal";
 
 export default function RootLayout() {
   return (
@@ -11,7 +11,7 @@ export default function RootLayout() {
         <Stack.Screen
           name="campus-select"
           options={{
-            presentation: "modal",
+            presentation: "pageSheet",
             headerShown: false,
           }}
         />

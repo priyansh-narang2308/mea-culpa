@@ -207,24 +207,32 @@ export const usePostsStore = create<PostsState>()((set, get) => {
     },
 
     reportPost: async (postId: string) => {
-      const { reportedPostIds, posts } = get();
+      const { reportedPostIds } = get();
       if (reportedPostIds.includes(postId)) {
-        return { error: null };
+        return { error: "You have already reported this post" };
       }
 
-      const updated = [...reportedPostIds, postId];
-      set({
-        reportedPostIds: updated,
-        posts: posts.filter((p) => p.id !== postId),
-      });
-      await AsyncStorage.setItem(REPORTED_KEY, JSON.stringify(updated));
+      const post = get().posts.find((p) => p.id === postId);
+      if (!post) return { error: "Post not found" };
 
-      const post = posts.find((p) => p.id === postId);
-      const count = (post?.report_count ?? 0) + 1;
+      const newCount = (post.report_count ?? 0) + 1;
+      const newReportedIds = [...reportedPostIds, postId];
+
+      set({
+        reportedPostIds: newReportedIds,
+        posts:
+          newCount >= REPORT_HIDE_THRESHOLD
+            ? get().posts.filter((p) => p.id !== postId)
+            : get().posts.map((p) =>
+                p.id === postId ? { ...p, report_count: newCount } : p,
+              ),
+      });
+
+      await AsyncStorage.setItem(REPORTED_KEY, JSON.stringify(newReportedIds));
 
       const { error } = await supabase
         .from("posts")
-        .update({ report_count: count })
+        .update({ report_count: newCount })
         .eq("id", postId);
 
       if (error) {
@@ -234,19 +242,23 @@ export const usePostsStore = create<PostsState>()((set, get) => {
     },
 
     upsertPost: (post: Post) => {
+      const { myCampus, showAllCampuses } = get();
+      if (myCampus && !showAllCampuses && post.campus !== myCampus) {
+        return;
+      }
+
       if (isHidden(post)) {
         set({ posts: get().posts.filter((p) => p.id !== post.id) });
         return;
       }
 
-      const { posts } = get();
-      const index = posts.findIndex((p) => p.id === post.id);
-      if (index >= 0) {
-        const updated = [...posts];
-        updated[index] = post;
-        set({ posts: updated });
+      const exists = get().posts.some((p) => p.id === post.id);
+      if (exists) {
+        set({
+          posts: get().posts.map((p) => (p.id === post.id ? post : p)),
+        });
       } else {
-        set({ posts: [post, ...posts] });
+        set({ posts: [post, ...get().posts] });
       }
     },
 
