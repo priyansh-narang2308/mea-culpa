@@ -57,6 +57,7 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { toast } from "sonner-native";
 
 const CATEGORIES: { id: PostCategory | "all"; label: string }[] = [
   { id: "all", label: "All" },
@@ -671,6 +672,7 @@ export default function HomeScreen() {
                   );
                   await reportPost(reportTargetPost.id);
                   setReportTargetPost(null);
+                  toast.success("Post flagged for review");
                 }
               }}
               style={{ backgroundColor: "#ef4444" }}
