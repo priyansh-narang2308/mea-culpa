@@ -17,6 +17,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Text as RNRText } from "@/components/ui/text";
+import * as Haptics from "expo-haptics";
 import { getSelectedCampus } from "@/lib/campus-storage";
 import { useAppTheme } from "@/lib/theme-manager";
 import { usePostsStore } from "@/stores/usePostsStore";
@@ -30,18 +31,19 @@ import {
   Flame,
   Frown,
   Heart,
+  HeartCrack,
   MapPin,
   Moon,
   MoreVertical,
   Plus,
   Smile,
-  Sparkles,
   Sun,
   X,
 } from "lucide-react-native";
 import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
+  Alert,
   FlatList,
   KeyboardAvoidingView,
   Modal,
@@ -84,16 +86,8 @@ export default function HomeScreen() {
     PostCategory | "all"
   >("all");
   const [composerOpen, setComposerOpen] = useState(false);
-  const [newContent, setNewContent] = useState("");
-  const [newCategory, setNewCategory] = useState<PostCategory>("confession");
-  const [submitting, setSubmitting] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
-
   const [reportTargetPost, setReportTargetPost] = useState<Post | null>(null);
-  const [alertInfo, setAlertInfo] = useState<{
-    title: string;
-    message: string;
-  } | null>(null);
 
   const {
     posts,
@@ -139,29 +133,6 @@ export default function HomeScreen() {
     setRefreshing(false);
   };
 
-  const handleCreatePost = async () => {
-    if (!newContent.trim()) {
-      setAlertInfo({
-        title: "Empty Confession",
-        message: "Please enter your confession before publishing.",
-      });
-      return;
-    }
-    setSubmitting(true);
-    const res = await addPost(newContent, newCategory);
-    setSubmitting(false);
-
-    if (res.error) {
-      setAlertInfo({
-        title: "Post Failed",
-        message: res.error,
-      });
-    } else {
-      setNewContent("");
-      setComposerOpen(false);
-    }
-  };
-
   const filteredPosts = posts.filter((p) => {
     if (selectedCategory === "all") return true;
     return p.category === selectedCategory;
@@ -170,9 +141,18 @@ export default function HomeScreen() {
   const renderPost = ({ item }: { item: Post }) => {
     const activeReaction = userReactions[item.id];
 
+    const handleReact = (type: "reaction_heart" | "reaction_shock" | "reaction_laugh" | "reaction_sad") => {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      toggleReaction(item.id, type);
+    };
+
+    const handleReport = () => {
+      setReportTargetPost(item);
+    };
+
     return (
       <View
-        className={`mb-3.5 rounded-2xl border p-4 shadow-sm ${
+        className={`mb-4 overflow-hidden rounded-[20px] border p-4 shadow-sm ${
           isDark ? "bg-zinc-900/90 border-zinc-800" : "bg-white border-zinc-200"
         }`}
       >
@@ -214,17 +194,17 @@ export default function HomeScreen() {
 
           <View className="flex-row items-center gap-2">
             <Text
-              className={`text-[11px] font-mono ${
-                isDark ? "text-zinc-500" : "text-zinc-400"
+              className={`text-xs font-bold ${
+                isDark ? "text-zinc-400" : "text-zinc-500"
               }`}
             >
               {formatRelativeTime(item.created_at)}
             </Text>
             <TouchableOpacity
-              onPress={() => setReportTargetPost(item)}
+              onPress={handleReport}
               hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
             >
-              <Flag size={12} color={isDark ? "#71717a" : "#a1a1aa"} />
+              <Flag size={14} color={isDark ? "#71717a" : "#a1a1aa"} />
             </TouchableOpacity>
           </View>
         </View>
@@ -244,7 +224,7 @@ export default function HomeScreen() {
         >
           <View className="flex-row items-center gap-2">
             <TouchableOpacity
-              onPress={() => toggleReaction(item.id, "reaction_heart")}
+              onPress={() => handleReact("reaction_heart")}
               className={`flex-row items-center gap-1.5 px-2.5 py-1 rounded-full border transition-all ${
                 activeReaction === "reaction_heart"
                   ? isDark
@@ -284,7 +264,7 @@ export default function HomeScreen() {
             </TouchableOpacity>
 
             <TouchableOpacity
-              onPress={() => toggleReaction(item.id, "reaction_shock")}
+              onPress={() => handleReact("reaction_shock")}
               className={`flex-row items-center gap-1.5 px-2.5 py-1 rounded-full border ${
                 activeReaction === "reaction_shock"
                   ? isDark
@@ -319,7 +299,7 @@ export default function HomeScreen() {
             </TouchableOpacity>
 
             <TouchableOpacity
-              onPress={() => toggleReaction(item.id, "reaction_laugh")}
+              onPress={() => handleReact("reaction_laugh")}
               className={`flex-row items-center gap-1.5 px-2.5 py-1 rounded-full border ${
                 activeReaction === "reaction_laugh"
                   ? isDark
@@ -354,7 +334,7 @@ export default function HomeScreen() {
             </TouchableOpacity>
 
             <TouchableOpacity
-              onPress={() => toggleReaction(item.id, "reaction_sad")}
+              onPress={() => handleReact("reaction_sad")}
               className={`flex-row items-center gap-1.5 px-2.5 py-1 rounded-full border ${
                 activeReaction === "reaction_sad"
                   ? isDark
@@ -446,7 +426,7 @@ export default function HomeScreen() {
             align="end"
           >
             <DropdownMenuLabel
-              className={isDark ? "text-zinc-400" : "text-zinc-500"}
+              className={`font-semibold ${isDark ? "text-zinc-300" : "text-zinc-800"}`}
             >
               {myCampus ? `Campus: ${myCampus}` : "No Campus Selected"}
             </DropdownMenuLabel>
@@ -462,7 +442,9 @@ export default function HomeScreen() {
                 color={isDark ? "#fb7185" : "#e11d48"}
                 className="mr-2"
               />
-              <Text className={isDark ? "text-white" : "text-zinc-900"}>
+              <Text
+                className={`font-semibold ${isDark ? "text-white" : "text-zinc-900"}`}
+              >
                 Change Campus
               </Text>
             </DropdownMenuItem>
@@ -475,7 +457,9 @@ export default function HomeScreen() {
                 color={isDark ? "#fb7185" : "#e11d48"}
                 className="mr-2"
               />
-              <Text className={isDark ? "text-white" : "text-zinc-900"}>
+              <Text
+                className={`font-semibold ${isDark ? "text-white" : "text-zinc-900"}`}
+              >
                 {showAllCampuses ? "View My Campus Only" : "View All Campuses"}
               </Text>
             </DropdownMenuItem>
@@ -490,7 +474,9 @@ export default function HomeScreen() {
               ) : (
                 <Moon size={16} color="#e11d48" className="mr-2" />
               )}
-              <Text className={isDark ? "text-white" : "text-zinc-900"}>
+              <Text
+                className={`font-semibold ${isDark ? "text-white" : "text-zinc-900"}`}
+              >
                 {isDark ? "Switch to Light Theme" : "Switch to Dark Theme"}
               </Text>
             </DropdownMenuItem>
@@ -585,21 +571,35 @@ export default function HomeScreen() {
                     : "bg-rose-50 border-rose-200"
                 }`}
               >
-                <Sparkles size={26} color="#f43f5e" />
+                <HeartCrack size={26} color="#f43f5e" />
               </View>
               <Text
                 className={`text-base font-bold text-center ${
                   isDark ? "text-zinc-200" : "text-zinc-900"
                 }`}
               >
-                No confessions yet
+                {selectedCategory === "all"
+                  ? "No posts yet"
+                  : selectedCategory === "confession"
+                    ? "No confessions yet"
+                    : selectedCategory === "rant"
+                      ? "No rants yet"
+                      : selectedCategory === "funny"
+                        ? "No funny posts yet"
+                        : "No advice posts yet"}
               </Text>
               <Text
                 className={`text-xs text-center mt-1 max-w-xs leading-relaxed ${
                   isDark ? "text-zinc-400" : "text-zinc-500"
                 }`}
               >
-                Be the first to speak your truth anonymously on this campus.
+                {selectedCategory === "rant"
+                  ? "Be the first to vent and let it all out anonymously."
+                  : selectedCategory === "funny"
+                    ? "Be the first to share a laugh with your campus."
+                    : selectedCategory === "advice"
+                      ? "Be the first to ask for some anonymous wisdom."
+                      : "Be the first to speak your truth anonymously on this campus."}
               </Text>
             </View>
           }
@@ -613,154 +613,16 @@ export default function HomeScreen() {
           className="flex-row items-center gap-2 bg-rose-600 px-5 py-3.5 rounded-full shadow-lg shadow-rose-500/40"
         >
           <Plus size={18} color="#ffffff" strokeWidth={2.5} />
-          <Text className="text-sm font-bold text-white tracking-wide">
+          {/* <Text className="text-sm font-bold text-white tracking-wide">
             Confess
-          </Text>
+          </Text> */}
         </TouchableOpacity>
       </View>
 
-      <Modal
+      <ComposerModal
         visible={composerOpen}
-        animationType="slide"
-        transparent
-        onRequestClose={() => setComposerOpen(false)}
-      >
-        <BlurView
-          intensity={isDark ? 30 : 15}
-          tint={isDark ? "dark" : "light"}
-          style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0 }}
-        />
-        <KeyboardAvoidingView
-          behavior={Platform.OS === "ios" ? "padding" : undefined}
-          className="flex-1"
-        >
-          <Pressable
-            className="flex-1 justify-end"
-            onPress={() => setComposerOpen(false)}
-          >
-            <Pressable
-              onPress={(e) => e.stopPropagation()}
-              className={`rounded-t-3xl border-t p-5 pb-8 shadow-2xl ${
-                isDark
-                  ? "bg-zinc-900 border-zinc-800 shadow-black/50"
-                  : "bg-white border-zinc-200 shadow-zinc-500/20"
-              }`}
-            >
-              <View
-                className={`flex-row items-center justify-between pb-3 border-b ${
-                  isDark ? "border-zinc-800" : "border-zinc-100"
-                }`}
-              >
-                <View>
-                  <Text
-                    className={`text-base font-bold ${
-                      isDark ? "text-white" : "text-zinc-950"
-                    }`}
-                  >
-                    Post Anonymous Confession
-                  </Text>
-                  <Text
-                    className={`text-xs ${
-                      isDark ? "text-zinc-400" : "text-zinc-500"
-                    }`}
-                  >
-                    Posting to {myCampus || "General"}
-                  </Text>
-                </View>
-                <TouchableOpacity
-                  onPress={() => setComposerOpen(false)}
-                  className={`size-8 rounded-full items-center justify-center ${
-                    isDark ? "bg-zinc-800" : "bg-zinc-100"
-                  }`}
-                >
-                  <X size={16} color={isDark ? "#a1a1aa" : "#71717a"} />
-                </TouchableOpacity>
-              </View>
-
-              <View className="flex-row items-center gap-2 my-3">
-                {(
-                  ["confession", "rant", "funny", "advice"] as PostCategory[]
-                ).map((cat) => {
-                  const isSelected = newCategory === cat;
-                  return (
-                    <TouchableOpacity
-                      key={cat}
-                      onPress={() => setNewCategory(cat)}
-                      className={`flex-1 py-2 rounded-xl border items-center ${
-                        isSelected
-                          ? "bg-rose-600 border-rose-500"
-                          : isDark
-                            ? "bg-zinc-800 border-zinc-700"
-                            : "bg-zinc-100 border-zinc-200"
-                      }`}
-                    >
-                      <Text
-                        className={`text-xs font-semibold capitalize ${
-                          isSelected
-                            ? "text-white"
-                            : isDark
-                              ? "text-zinc-300"
-                              : "text-zinc-700"
-                        }`}
-                      >
-                        {cat}
-                      </Text>
-                    </TouchableOpacity>
-                  );
-                })}
-              </View>
-
-              <TextInput
-                value={newContent}
-                onChangeText={setNewContent}
-                maxLength={200}
-                multiline
-                numberOfLines={4}
-                disableFullscreenUI={true}
-                placeholder="What's on your mind? Spill the tea anonymously..."
-                placeholderTextColor={isDark ? "#71717a" : "#a1a1aa"}
-                className={`rounded-2xl p-4 text-base min-h-[110px] border ${
-                  isDark
-                    ? "bg-black text-zinc-100 border-zinc-800"
-                    : "bg-zinc-50 text-zinc-900 border-zinc-200"
-                }`}
-                textAlignVertical="top"
-              />
-
-              <View className="flex-row items-center justify-between mt-3">
-                <Text
-                  className={`text-xs font-mono ${
-                    isDark ? "text-zinc-500" : "text-zinc-400"
-                  }`}
-                >
-                  {newContent.length}/200
-                </Text>
-                <TouchableOpacity
-                  onPress={handleCreatePost}
-                  disabled={submitting || !newContent.trim()}
-                  className={`flex-row items-center gap-2 px-5 py-2.5 rounded-full ${
-                    newContent.trim() && !submitting
-                      ? "bg-rose-600 shadow-md shadow-rose-500/30"
-                      : isDark
-                        ? "bg-zinc-800 opacity-60"
-                        : "bg-zinc-200 opacity-60"
-                  }`}
-                >
-                  {submitting ? (
-                    <ActivityIndicator size="small" color="#ffffff" />
-                  ) : (
-                    <>
-                      <Text className="text-xs font-bold text-white uppercase tracking-wider">
-                        Publish
-                      </Text>
-                    </>
-                  )}
-                </TouchableOpacity>
-              </View>
-            </Pressable>
-          </Pressable>
-        </KeyboardAvoidingView>
-      </Modal>
+        onClose={() => setComposerOpen(false)}
+      />
 
       <AlertDialog
         open={!!reportTargetPost}
@@ -768,85 +630,232 @@ export default function HomeScreen() {
           if (!open) setReportTargetPost(null);
         }}
       >
-        <AlertDialogContent
-          className={
-            isDark ? "bg-zinc-900 border-zinc-800" : "bg-white border-zinc-200"
-          }
-        >
+        <AlertDialogContent className="w-[90%] max-w-[400px]">
           <AlertDialogHeader>
-            <AlertDialogTitle
-              className={isDark ? "text-white" : "text-zinc-950"}
-            >
-              Report Confession
-            </AlertDialogTitle>
-            <AlertDialogDescription
-              className={isDark ? "text-zinc-400" : "text-zinc-600"}
-            >
-              Are you sure you want to report this confession? It will be
-              reviewed and hidden from the feed if multiple users flag it.
+            <AlertDialogTitle>Report Confession?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will flag the post for review. You can only report a post
+              once.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel
-              onPress={() => setReportTargetPost(null)}
-              className={
-                isDark
-                  ? "bg-zinc-800 border-zinc-700"
-                  : "bg-zinc-100 border-zinc-200"
-              }
-            >
-              <RNRText className={isDark ? "text-zinc-200" : "text-zinc-700"}>
-                Cancel
-              </RNRText>
+            <AlertDialogCancel>
+              <RNRText>Cancel</RNRText>
             </AlertDialogCancel>
             <AlertDialogAction
               onPress={async () => {
                 if (reportTargetPost) {
+                  Haptics.notificationAsync(
+                    Haptics.NotificationFeedbackType.Warning
+                  );
                   await reportPost(reportTargetPost.id);
                   setReportTargetPost(null);
                 }
               }}
-              className="bg-rose-600 active:bg-rose-700"
+              className="bg-red-500"
             >
-              <RNRText className="text-white font-semibold">Report</RNRText>
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-
-      <AlertDialog
-        open={!!alertInfo}
-        onOpenChange={(open) => {
-          if (!open) setAlertInfo(null);
-        }}
-      >
-        <AlertDialogContent
-          className={
-            isDark ? "bg-zinc-900 border-zinc-800" : "bg-white border-zinc-200"
-          }
-        >
-          <AlertDialogHeader>
-            <AlertDialogTitle
-              className={isDark ? "text-white" : "text-zinc-950"}
-            >
-              {alertInfo?.title}
-            </AlertDialogTitle>
-            <AlertDialogDescription
-              className={isDark ? "text-zinc-400" : "text-zinc-600"}
-            >
-              {alertInfo?.message}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogAction
-              onPress={() => setAlertInfo(null)}
-              className="bg-rose-600 active:bg-rose-700"
-            >
-              <RNRText className="text-white font-semibold">Got it</RNRText>
+              <RNRText className="text-white">Report</RNRText>
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
     </SafeAreaView>
+  );
+}
+
+function ComposerModal({
+  visible,
+  onClose,
+}: {
+  visible: boolean;
+  onClose: () => void;
+}) {
+  const { isDark } = useAppTheme();
+  const { myCampus, addPost } = usePostsStore();
+  const [newContent, setNewContent] = useState("");
+  const [newCategory, setNewCategory] = useState<PostCategory>("confession");
+  const [submitting, setSubmitting] = useState(false);
+
+  const handleCreatePost = async () => {
+    if (!newContent.trim()) {
+      Alert.alert(
+        "Empty Confession",
+        "Please enter your confession before publishing.",
+      );
+      return;
+    }
+    setSubmitting(true);
+    const res = await addPost(newContent.trim(), newCategory);
+    setSubmitting(false);
+
+    if (res && !res.error) {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      setNewContent("");
+      onClose();
+    } else {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+    }
+  };
+
+  return (
+    <Modal
+      visible={visible}
+      animationType="slide"
+      transparent
+      onRequestClose={onClose}
+    >
+      <BlurView
+        intensity={isDark ? 30 : 15}
+        tint={isDark ? "dark" : "light"}
+        style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0 }}
+      />
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        className="flex-1"
+      >
+        <Pressable className="flex-1 justify-end" onPress={onClose}>
+          <Pressable
+            onPress={(e) => e.stopPropagation()}
+            className={`rounded-t-3xl border-t p-5 pb-8 ${
+              isDark
+                ? "bg-zinc-900 border-zinc-800"
+                : "bg-white border-zinc-200"
+            }`}
+            style={{
+              shadowColor: isDark ? "#000" : "#71717a",
+              shadowOffset: { width: 0, height: -10 },
+              shadowOpacity: isDark ? 0.5 : 0.1,
+              shadowRadius: 20,
+              elevation: 24,
+            }}
+          >
+            <View
+              className={`flex-row items-center justify-between pb-3 border-b ${
+                isDark ? "border-zinc-800" : "border-zinc-100"
+              }`}
+            >
+              <View>
+                <Text
+                  className={`text-base font-bold ${
+                    isDark ? "text-white" : "text-zinc-950"
+                  }`}
+                >
+                  Post Anonymous Confession
+                </Text>
+                <Text
+                  className={`text-xs ${
+                    isDark ? "text-zinc-400" : "text-zinc-500"
+                  }`}
+                >
+                  Posting to {myCampus || "General"}
+                </Text>
+              </View>
+              <TouchableOpacity
+                onPress={onClose}
+                className={`size-8 rounded-full items-center justify-center ${
+                  isDark ? "bg-zinc-800" : "bg-zinc-100"
+                }`}
+              >
+                <X size={16} color={isDark ? "#a1a1aa" : "#71717a"} />
+              </TouchableOpacity>
+            </View>
+
+            <View className="flex-row items-center gap-2 my-3">
+              {(
+                ["confession", "rant", "funny", "advice"] as PostCategory[]
+              ).map((cat) => {
+                const isSelected = newCategory === cat;
+                return (
+                  <TouchableOpacity
+                    key={cat}
+                    onPress={() => setNewCategory(cat)}
+                    className={`flex-1 py-2 rounded-xl border items-center ${
+                      isSelected
+                        ? "bg-rose-600 border-rose-500"
+                        : isDark
+                          ? "bg-zinc-800 border-zinc-700"
+                          : "bg-zinc-100 border-zinc-200"
+                    }`}
+                  >
+                    <Text
+                      className={`text-xs font-semibold capitalize ${
+                        isSelected
+                          ? "text-white"
+                          : isDark
+                            ? "text-zinc-300"
+                            : "text-zinc-700"
+                      }`}
+                    >
+                      {cat}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+
+            <TextInput
+              value={newContent}
+              onChangeText={setNewContent}
+              maxLength={200}
+              multiline
+              numberOfLines={4}
+              disableFullscreenUI={true}
+              placeholder="What's on your mind? Spill the tea anonymously..."
+              placeholderTextColor={isDark ? "#71717a" : "#a1a1aa"}
+              className={`rounded-2xl p-4 text-base min-h-[110px] border ${
+                isDark
+                  ? "bg-black text-zinc-100 border-zinc-800"
+                  : "bg-zinc-50 text-zinc-900 border-zinc-200"
+              }`}
+              textAlignVertical="top"
+            />
+
+            <View className="flex-row items-center justify-between mt-3">
+              <Text
+                className={`text-xs font-mono ${
+                  isDark ? "text-zinc-500" : "text-zinc-400"
+                }`}
+              >
+                {newContent.length}/200
+              </Text>
+              <TouchableOpacity
+                onPress={handleCreatePost}
+                disabled={submitting || !newContent.trim()}
+                className={`flex-row items-center gap-2 px-5 py-2.5 rounded-full ${
+                  newContent.trim() && !submitting
+                    ? "bg-rose-600"
+                    : isDark
+                      ? "bg-zinc-800"
+                      : "bg-zinc-200"
+                }`}
+                style={
+                  newContent.trim() && !submitting
+                    ? {
+                        shadowColor: "#f43f5e",
+                        shadowOffset: { width: 0, height: 4 },
+                        shadowOpacity: 0.3,
+                        shadowRadius: 6,
+                        elevation: 4,
+                      }
+                    : {
+                        opacity: 0.6,
+                      }
+                }
+              >
+                {submitting ? (
+                  <ActivityIndicator size="small" color="#ffffff" />
+                ) : (
+                  <>
+                    <Text className="text-xs font-bold text-white uppercase tracking-wider">
+                      Publish
+                    </Text>
+                  </>
+                )}
+              </TouchableOpacity>
+            </View>
+          </Pressable>
+        </Pressable>
+      </KeyboardAvoidingView>
+    </Modal>
   );
 }
