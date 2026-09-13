@@ -17,6 +17,9 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Text as RNRText } from "@/components/ui/text";
+import { CampusVerificationModal } from "@/components/CampusVerificationModal";
+import { VerifiedBadgeButton } from "@/components/VerifiedBadgeButton";
+import { getCampusVerificationStatus } from "@/lib/campus-geofence";
 import { getSelectedCampus } from "@/lib/campus-storage";
 import { useAppTheme } from "@/lib/theme-manager";
 import { usePostsStore } from "@/stores/usePostsStore";
@@ -58,7 +61,10 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from "react-native-safe-area-context";
 import { toast } from "sonner-native";
 
 const CATEGORIES: { id: PostCategory | "all"; label: string }[] = [
@@ -130,6 +136,9 @@ export default function HomeScreen() {
   const [alreadyReportedPost, setAlreadyReportedPost] = useState<Post | null>(
     null,
   );
+  const [isVerified, setIsVerified] = useState(false);
+  const [daysRemaining, setDaysRemaining] = useState(0);
+  const [verificationModalOpen, setVerificationModalOpen] = useState(false);
 
   const {
     posts,
@@ -148,19 +157,38 @@ export default function HomeScreen() {
     toggleShowAllCampuses,
   } = usePostsStore();
 
+  const checkCampusVerification = async (campusName?: string) => {
+    const target = campusName || myCampus;
+    if (!target) return;
+    const status = await getCampusVerificationStatus(target);
+    setIsVerified(status.isVerified);
+    setDaysRemaining(status.daysRemaining);
+  };
+
   useEffect(() => {
     const init = async () => {
-      if (!myCampus) {
+      let activeCampus = myCampus;
+      if (!activeCampus) {
         const saved = await getSelectedCampus();
         if (saved) {
           usePostsStore.getState().setMyCampus(saved);
+          activeCampus = saved;
         }
+      }
+      if (activeCampus) {
+        checkCampusVerification(activeCampus);
       }
       await usePostsStore.getState().loadUserReactions();
       await usePostsStore.getState().loadReportedPosts();
     };
     init();
   }, []);
+
+  useEffect(() => {
+    if (myCampus) {
+      checkCampusVerification(myCampus);
+    }
+  }, [myCampus]);
 
   useEffect(() => {
     fetchPosts();
@@ -173,7 +201,47 @@ export default function HomeScreen() {
   const handleRefresh = async () => {
     setRefreshing(true);
     await fetchPosts();
+    if (myCampus) {
+      await checkCampusVerification(myCampus);
+    }
     setRefreshing(false);
+  };
+
+  const handlePressConfess = async () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    if (showAllCampuses || !myCampus) {
+      setComposerOpen(true);
+      return;
+    }
+
+    const status = await getCampusVerificationStatus(myCampus);
+    setIsVerified(status.isVerified);
+    setDaysRemaining(status.daysRemaining);
+
+    if (status.isVerified) {
+      setComposerOpen(true);
+    } else {
+      setVerificationModalOpen(true);
+    }
+  };
+
+  const handleVerificationSuccess = async () => {
+    setVerificationModalOpen(false);
+    if (myCampus) {
+      const status = await getCampusVerificationStatus(myCampus);
+      setIsVerified(status.isVerified);
+      setDaysRemaining(status.daysRemaining);
+    }
+    toast.success("Campus Verified", {
+      description: "Proximity verified on-device. Valid for 7 days!",
+    });
+    setComposerOpen(true);
+  };
+
+  const handleSwitchToAllCampusesFromModal = () => {
+    setVerificationModalOpen(false);
+    toggleShowAllCampuses(true);
+    setComposerOpen(true);
   };
 
   const filteredPosts = posts.filter((p) => {
@@ -188,10 +256,7 @@ export default function HomeScreen() {
 
     const handleReact = (
       type:
-        | "reaction_heart"
-        | "reaction_shock"
-        | "reaction_laugh"
-        | "reaction_sad",
+        "reaction_heart" | "reaction_shock" | "reaction_laugh" | "reaction_sad",
     ) => {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
       toggleReaction(item.id, type);
@@ -461,83 +526,98 @@ export default function HomeScreen() {
           </Text>
         </View>
 
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <TouchableOpacity
-              className={`size-9 rounded-full items-center justify-center border ${
+        <View className="flex-row items-center gap-2">
+          <VerifiedBadgeButton
+            campusName={myCampus || ""}
+            isVerified={isVerified}
+            daysRemaining={daysRemaining}
+            onPressVerify={() => setVerificationModalOpen(true)}
+            onReverify={() => setVerificationModalOpen(true)}
+          />
+
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <TouchableOpacity
+                className={`size-9 rounded-full items-center justify-center border ${
+                  isDark
+                    ? "bg-zinc-900 border-zinc-800"
+                    : "bg-zinc-100 border-zinc-200"
+                }`}
+              >
+                <MoreVertical
+                  size={18}
+                  color={isDark ? "#d4d4d8" : "#3f3f46"}
+                />
+              </TouchableOpacity>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent
+              className={`w-56 mt-2 ${
                 isDark
                   ? "bg-zinc-900 border-zinc-800"
-                  : "bg-zinc-100 border-zinc-200"
+                  : "bg-white border-zinc-200"
               }`}
+              align="end"
             >
-              <MoreVertical size={18} color={isDark ? "#d4d4d8" : "#3f3f46"} />
-            </TouchableOpacity>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent
-            className={`w-56 mt-2 ${
-              isDark
-                ? "bg-zinc-900 border-zinc-800"
-                : "bg-white border-zinc-200"
-            }`}
-            align="end"
-          >
-            <DropdownMenuLabel
-              className={`font-semibold ${isDark ? "text-zinc-300" : "text-zinc-800"}`}
-            >
-              {myCampus ? `Campus: ${myCampus}` : "No Campus Selected"}
-            </DropdownMenuLabel>
-            <DropdownMenuSeparator
-              className={isDark ? "bg-zinc-800" : "bg-zinc-100"}
-            />
-
-            <DropdownMenuItem
-              onPress={() => router.push("/campus-select?mode=change")}
-            >
-              <MapPin
-                size={16}
-                color={isDark ? "#fb7185" : "#e11d48"}
-                className="mr-2"
+              <DropdownMenuLabel
+                className={`font-semibold ${isDark ? "text-zinc-300" : "text-zinc-800"}`}
+              >
+                {myCampus ? `Campus: ${myCampus}` : "No Campus Selected"}
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator
+                className={isDark ? "bg-zinc-800" : "bg-zinc-100"}
               />
-              <Text
-                className={`font-semibold ${isDark ? "text-white" : "text-zinc-900"}`}
-              >
-                Change Campus
-              </Text>
-            </DropdownMenuItem>
 
-            <DropdownMenuItem
-              onPress={() => toggleShowAllCampuses(!showAllCampuses)}
-            >
-              <Compass
-                size={16}
-                color={isDark ? "#fb7185" : "#e11d48"}
-                className="mr-2"
+              <DropdownMenuItem
+                onPress={() => router.push("/campus-select?mode=change")}
+              >
+                <MapPin
+                  size={16}
+                  color={isDark ? "#fb7185" : "#e11d48"}
+                  className="mr-2"
+                />
+                <Text
+                  className={`font-semibold ${isDark ? "text-white" : "text-zinc-900"}`}
+                >
+                  Change Campus
+                </Text>
+              </DropdownMenuItem>
+
+              <DropdownMenuItem
+                onPress={() => toggleShowAllCampuses(!showAllCampuses)}
+              >
+                <Compass
+                  size={16}
+                  color={isDark ? "#fb7185" : "#e11d48"}
+                  className="mr-2"
+                />
+                <Text
+                  className={`font-semibold ${isDark ? "text-white" : "text-zinc-900"}`}
+                >
+                  {showAllCampuses
+                    ? "View My Campus Only"
+                    : "View All Campuses"}
+                </Text>
+              </DropdownMenuItem>
+
+              <DropdownMenuSeparator
+                className={isDark ? "bg-zinc-800" : "bg-zinc-100"}
               />
-              <Text
-                className={`font-semibold ${isDark ? "text-white" : "text-zinc-900"}`}
-              >
-                {showAllCampuses ? "View My Campus Only" : "View All Campuses"}
-              </Text>
-            </DropdownMenuItem>
 
-            <DropdownMenuSeparator
-              className={isDark ? "bg-zinc-800" : "bg-zinc-100"}
-            />
-
-            <DropdownMenuItem onPress={toggleTheme}>
-              {isDark ? (
-                <Sun size={16} color="#fb7185" className="mr-2" />
-              ) : (
-                <Moon size={16} color="#e11d48" className="mr-2" />
-              )}
-              <Text
-                className={`font-semibold ${isDark ? "text-white" : "text-zinc-900"}`}
-              >
-                {isDark ? "Switch to Light Theme" : "Switch to Dark Theme"}
-              </Text>
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+              <DropdownMenuItem onPress={toggleTheme}>
+                {isDark ? (
+                  <Sun size={16} color="#fb7185" className="mr-2" />
+                ) : (
+                  <Moon size={16} color="#e11d48" className="mr-2" />
+                )}
+                <Text
+                  className={`font-semibold ${isDark ? "text-white" : "text-zinc-900"}`}
+                >
+                  {isDark ? "Switch to Light Theme" : "Switch to Dark Theme"}
+                </Text>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </View>
       </View>
 
       <View className="py-2.5 px-4">
@@ -670,7 +750,7 @@ export default function HomeScreen() {
         }}
       >
         <TouchableOpacity
-          onPress={() => setComposerOpen(true)}
+          onPress={handlePressConfess}
           activeOpacity={0.88}
           className="size-14 rounded-full items-center justify-center bg-rose-600 shadow-xl shadow-rose-500/50"
           style={{
@@ -684,6 +764,14 @@ export default function HomeScreen() {
       <ComposerModal
         visible={composerOpen}
         onClose={() => setComposerOpen(false)}
+      />
+
+      <CampusVerificationModal
+        visible={verificationModalOpen}
+        campusName={myCampus || ""}
+        onClose={() => setVerificationModalOpen(false)}
+        onVerified={handleVerificationSuccess}
+        onSwitchToAllCampuses={handleSwitchToAllCampusesFromModal}
       />
 
       <AlertDialog
@@ -842,7 +930,8 @@ function ComposerModal({
                 : "bg-white border-zinc-200"
             }`}
             style={{
-              paddingBottom: keyboardHeight > 0 ? 16 : Math.max(insets.bottom, 24),
+              paddingBottom:
+                keyboardHeight > 0 ? 16 : Math.max(insets.bottom, 24),
               shadowColor: isDark ? "#000" : "#71717a",
               shadowOffset: { width: 0, height: -10 },
               shadowOpacity: isDark ? 0.5 : 0.1,
@@ -967,7 +1056,11 @@ function ComposerModal({
                   <ActivityIndicator size="small" color="#ffffff" />
                 ) : (
                   <>
-                    <Send size={13} color="#ffffff" style={{ marginRight: 2 }} />
+                    <Send
+                      size={13}
+                      color="#ffffff"
+                      style={{ marginRight: 2 }}
+                    />
                     <Text className="text-xs font-bold text-white uppercase tracking-wider">
                       Confess
                     </Text>

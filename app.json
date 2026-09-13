@@ -9,10 +9,14 @@
     "userInterfaceStyle": "automatic",
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.priyansh230888.mea-culpa"
+      "bundleIdentifier": "com.priyansh230888.mea-culpa",
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "Mea Culpa uses one-time location to verify you are near your campus before posting, preserving full anonymity."
+      }
     },
     "android": {
       "package": "com.priyansh230888.meaculpa",
+      "permissions": ["ACCESS_FINE_LOCATION", "ACCESS_COARSE_LOCATION"],
       "adaptiveIcon": {
         "backgroundColor": "#ffe4e6",
         "foregroundImage": "./assets/images/logo1.png"
@@ -36,6 +40,12 @@
             "backgroundColor": "#09090b",
             "image": "./assets/images/logo1.png"
           }
+        }
+      ],
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Mea Culpa uses one-time location to verify you are near your campus before posting, preserving full anonymity."
         }
       ]
     ],

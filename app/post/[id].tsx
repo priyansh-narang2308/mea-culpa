@@ -1,3 +1,5 @@
+import { CampusVerificationModal } from "@/components/CampusVerificationModal";
+import { getCampusVerificationStatus } from "@/lib/campus-geofence";
 import { useAppTheme } from "@/lib/theme-manager";
 import { usePostsStore } from "@/stores/usePostsStore";
 import { useRepliesStore } from "@/stores/useRepliesStore";
@@ -26,7 +28,10 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from "react-native-safe-area-context";
 
 const EMPTY_REPLIES: Reply[] = [];
 
@@ -86,6 +91,7 @@ const PostDetailScreen = () => {
   const [replyText, setReplyText] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [isKeyboardVisible, setKeyboardVisible] = useState(false);
+  const [verificationModalOpen, setVerificationModalOpen] = useState(false);
   const flatListRef = useRef<FlatList>(null);
   const insets = useSafeAreaInsets();
 
@@ -108,7 +114,9 @@ const PostDetailScreen = () => {
     );
     const hideSub = Keyboard.addListener(
       Platform.OS === "ios" ? "keyboardWillHide" : "keyboardDidHide",
-      () => setKeyboardVisible(false),
+      () => {
+        setKeyboardVisible(false);
+      },
     );
     return () => {
       showSub.remove();
@@ -117,6 +125,7 @@ const PostDetailScreen = () => {
   }, []);
 
   useEffect(() => {
+    if (!id) return;
     fetchReplies(id);
     const unsubscribe = subscribeToReplies(id);
     return () => {
@@ -141,10 +150,7 @@ const PostDetailScreen = () => {
 
   const handleReact = (
     type:
-      | "reaction_heart"
-      | "reaction_shock"
-      | "reaction_laugh"
-      | "reaction_sad",
+      "reaction_heart" | "reaction_shock" | "reaction_laugh" | "reaction_sad",
   ) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     toggleReaction(post.id, type);
@@ -152,6 +158,15 @@ const PostDetailScreen = () => {
 
   const handleSendReply = async () => {
     if (!replyText.trim() || submitting) return;
+
+    if (post.campus) {
+      const status = await getCampusVerificationStatus(post.campus);
+      if (!status.isVerified) {
+        setVerificationModalOpen(true);
+        return;
+      }
+    }
+
     setSubmitting(true);
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     const res = await addReply(post.id, replyText);
@@ -221,7 +236,9 @@ const PostDetailScreen = () => {
           contentContainerStyle={{ paddingBottom: 20 }}
           keyboardShouldPersistTaps="handled"
           keyboardDismissMode="on-drag"
-          onContentSizeChange={() => flatListRef.current?.scrollToEnd({ animated: true })}
+          onContentSizeChange={() =>
+            flatListRef.current?.scrollToEnd({ animated: true })
+          }
           onLayout={() => flatListRef.current?.scrollToEnd({ animated: true })}
           ListHeaderComponent={
             <View
@@ -462,6 +479,16 @@ const PostDetailScreen = () => {
           </TouchableOpacity>
         </View>
       </KeyboardAvoidingView>
+
+      <CampusVerificationModal
+        visible={verificationModalOpen}
+        campusName={post.campus || ""}
+        onClose={() => setVerificationModalOpen(false)}
+        onVerified={() => {
+          setVerificationModalOpen(false);
+          handleSendReply();
+        }}
+      />
     </SafeAreaView>
   );
 };
