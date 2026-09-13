@@ -18,6 +18,7 @@ import { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
+  Keyboard,
   KeyboardAvoidingView,
   Platform,
   Text,
@@ -25,7 +26,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 
 const EMPTY_REPLIES: Reply[] = [];
 
@@ -84,7 +85,9 @@ const PostDetailScreen = () => {
 
   const [replyText, setReplyText] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [isKeyboardVisible, setKeyboardVisible] = useState(false);
   const flatListRef = useRef<FlatList>(null);
+  const insets = useSafeAreaInsets();
 
   const post = usePostsStore((s) => s.posts.find((p) => p.id === id));
   const { userReactions, toggleReaction } = usePostsStore();
@@ -92,6 +95,26 @@ const PostDetailScreen = () => {
   const { fetchReplies, subscribeToReplies, repliesByPost, addReply, loading } =
     useRepliesStore();
   const replies = repliesByPost[id] || EMPTY_REPLIES;
+
+  useEffect(() => {
+    const showSub = Keyboard.addListener(
+      Platform.OS === "ios" ? "keyboardWillShow" : "keyboardDidShow",
+      () => {
+        setKeyboardVisible(true);
+        setTimeout(() => {
+          flatListRef.current?.scrollToEnd({ animated: true });
+        }, 100);
+      },
+    );
+    const hideSub = Keyboard.addListener(
+      Platform.OS === "ios" ? "keyboardWillHide" : "keyboardDidHide",
+      () => setKeyboardVisible(false),
+    );
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+    };
+  }, []);
 
   useEffect(() => {
     fetchReplies(id);
@@ -164,12 +187,14 @@ const PostDetailScreen = () => {
 
   return (
     <SafeAreaView
+      edges={["top", "left", "right"]}
       style={{ flex: 1 }}
       className={isDark ? "bg-black" : "bg-zinc-50"}
     >
       <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        behavior="padding"
         style={{ flex: 1 }}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 0}
       >
         <View
           className={`px-4 py-3 border-b flex-row items-center ${isDark ? "bg-black border-zinc-900" : "bg-white border-zinc-200"}`}
@@ -194,6 +219,8 @@ const PostDetailScreen = () => {
           keyExtractor={(item) => item.id}
           renderItem={renderReply}
           contentContainerStyle={{ paddingBottom: 20 }}
+          keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="on-drag"
           onContentSizeChange={() => flatListRef.current?.scrollToEnd({ animated: true })}
           onLayout={() => flatListRef.current?.scrollToEnd({ animated: true })}
           ListHeaderComponent={
@@ -387,11 +414,19 @@ const PostDetailScreen = () => {
         />
 
         <View
-          className={`flex-row items-end px-3 py-2 border-t ${isDark ? "bg-zinc-950 border-zinc-900" : "bg-white border-zinc-200"}`}
+          style={{
+            paddingBottom: isKeyboardVisible ? 10 : Math.max(insets.bottom, 12),
+          }}
+          className={`flex-row items-end px-3 pt-2.5 border-t ${isDark ? "bg-zinc-950 border-zinc-900" : "bg-white border-zinc-200"}`}
         >
           <TextInput
             value={replyText}
             onChangeText={setReplyText}
+            onFocus={() => {
+              setTimeout(() => {
+                flatListRef.current?.scrollToEnd({ animated: true });
+              }, 150);
+            }}
             placeholder="Reply anonymously..."
             placeholderTextColor={isDark ? "#71717a" : "#a1a1aa"}
             multiline

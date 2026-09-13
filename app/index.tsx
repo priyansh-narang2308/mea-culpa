@@ -1,18 +1,17 @@
-import { getSelectedCampus, setSelectedCampus } from "@/lib/campus-storage";
-import { useAppTheme } from "@/lib/theme-manager";
-import { usePostsStore } from "@/stores/usePostsStore";
-import { router } from "expo-router";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { getSelectedCampus, setSelectedCampus } from "@/lib/campus-storage";
+import { useAppTheme } from "@/lib/theme-manager";
+import { usePostsStore } from "@/stores/usePostsStore";
+import { router } from "expo-router";
 import {
   ArrowRight,
   EyeOff,
   Flame,
-  Heart,
   Lock,
   MapPin,
   Moon,
@@ -25,13 +24,12 @@ import {
   Animated,
   Dimensions,
   Easing,
+  Image,
   Pressable,
-  ScrollView,
   StatusBar,
   Text,
   TouchableOpacity,
   View,
-  Image,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Svg, {
@@ -239,15 +237,7 @@ export default function WelcomeScreen() {
       </View>
 
       <SafeAreaView className="flex-1">
-        <ScrollView
-          contentContainerStyle={{
-            flexGrow: 1,
-            justifyContent: "space-between",
-            paddingHorizontal: 24,
-            paddingVertical: 12,
-          }}
-          showsVerticalScrollIndicator={false}
-        >
+        <View className="flex-1 justify-between px-6 py-2">
           <Animated.View
             style={{
               opacity: contentFade,
@@ -282,7 +272,10 @@ export default function WelcomeScreen() {
                         : "bg-zinc-100 border-zinc-200"
                     }`}
                   >
-                    <MoreVertical size={16} color={isDark ? "#d4d4d8" : "#3f3f46"} />
+                    <MoreVertical
+                      size={16}
+                      color={isDark ? "#d4d4d8" : "#3f3f46"}
+                    />
                   </TouchableOpacity>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent
@@ -295,10 +288,14 @@ export default function WelcomeScreen() {
                   >
                     <MapPin size={16} color={isDark ? "#a1a1aa" : "#52525b"} />
                     <View>
-                      <Text className={`font-medium ${isDark ? "text-zinc-100" : "text-zinc-900"}`}>
+                      <Text
+                        className={`font-medium ${isDark ? "text-zinc-100" : "text-zinc-900"}`}
+                      >
                         Change Campus
                       </Text>
-                      <Text className={`text-xs ${isDark ? "text-zinc-500" : "text-zinc-400"}`}>
+                      <Text
+                        className={`text-xs ${isDark ? "text-zinc-500" : "text-zinc-400"}`}
+                      >
                         {myCampus || "Select Campus"}
                       </Text>
                     </View>
@@ -314,10 +311,14 @@ export default function WelcomeScreen() {
                       <Moon size={16} color="#e11d48" />
                     )}
                     <View>
-                      <Text className={`font-medium ${isDark ? "text-zinc-100" : "text-zinc-900"}`}>
+                      <Text
+                        className={`font-medium ${isDark ? "text-zinc-100" : "text-zinc-900"}`}
+                      >
                         {isDark ? "Light Mode" : "Dark Mode"}
                       </Text>
-                      <Text className={`text-xs ${isDark ? "text-zinc-500" : "text-zinc-400"}`}>
+                      <Text
+                        className={`text-xs ${isDark ? "text-zinc-500" : "text-zinc-400"}`}
+                      >
                         Toggle app theme
                       </Text>
                     </View>
@@ -332,17 +333,17 @@ export default function WelcomeScreen() {
               opacity: contentFade,
               transform: [{ translateY: contentSlide }],
             }}
-            className="items-center my-auto py-6"
+            className="items-center my-auto py-2"
           >
             <Image
               source={require("../assets/images/logo1.png")}
-              className={`size-16 rounded-2xl mb-5 border shadow-sm ${
+              className={`size-14 rounded-2xl mb-3 border shadow-sm ${
                 isDark ? "border-zinc-800" : "border-zinc-200"
               }`}
             />
 
             <Text
-              className={`text-4xl font-extrabold tracking-tight text-center mb-2 ${
+              className={`text-3xl font-extrabold tracking-tight text-center mb-1 ${
                 isDark ? "text-white" : "text-zinc-950"
               }`}
             >
@@ -350,7 +351,7 @@ export default function WelcomeScreen() {
             </Text>
 
             <View
-              className={`px-3 py-1 rounded-full border mb-4 ${
+              className={`px-3 py-0.5 rounded-full border mb-2.5 ${
                 isDark
                   ? "bg-rose-950/30 border-rose-900/40"
                   : "bg-rose-100/70 border-rose-200"
@@ -366,7 +367,7 @@ export default function WelcomeScreen() {
             </View>
 
             <Text
-              className={`text-base text-center max-w-[320px] font-normal leading-relaxed mb-8 ${
+              className={`text-[13px] text-center max-w-[310px] font-normal leading-relaxed mb-4 ${
                 isDark ? "text-zinc-400" : "text-zinc-600"
               }`}
             >
@@ -375,20 +376,20 @@ export default function WelcomeScreen() {
               zero identity attached.
             </Text>
 
-            <View className="w-full max-w-[340px] gap-2.5">
+            <View className="w-full max-w-[340px] gap-2">
               <View
-                className={`flex-row items-center p-3.5 rounded-2xl border ${
+                className={`flex-row items-center p-3 rounded-2xl border ${
                   isDark
                     ? "bg-zinc-950/80 border-zinc-800/80"
                     : "bg-white/90 border-zinc-200/90 shadow-sm"
                 }`}
               >
                 <View
-                  className={`size-9 rounded-xl items-center justify-center mr-3 ${
+                  className={`size-8 rounded-xl items-center justify-center mr-3 ${
                     isDark ? "bg-rose-950/40" : "bg-rose-50"
                   }`}
                 >
-                  <EyeOff size={18} color={isDark ? "#fb7185" : "#e11d48"} />
+                  <EyeOff size={16} color={isDark ? "#fb7185" : "#e11d48"} />
                 </View>
                 <View className="flex-1">
                   <Text
@@ -399,7 +400,7 @@ export default function WelcomeScreen() {
                     Post Anonymously
                   </Text>
                   <Text
-                    className={`text-xs ${
+                    className={`text-[11px] ${
                       isDark ? "text-zinc-400" : "text-zinc-500"
                     }`}
                   >
@@ -409,18 +410,18 @@ export default function WelcomeScreen() {
               </View>
 
               <View
-                className={`flex-row items-center p-3.5 rounded-2xl border ${
+                className={`flex-row items-center p-3 rounded-2xl border ${
                   isDark
                     ? "bg-zinc-950/80 border-zinc-800/80"
                     : "bg-white/90 border-zinc-200/90 shadow-sm"
                 }`}
               >
                 <View
-                  className={`size-9 rounded-xl items-center justify-center mr-3 ${
+                  className={`size-8 rounded-xl items-center justify-center mr-3 ${
                     isDark ? "bg-rose-950/40" : "bg-rose-50"
                   }`}
                 >
-                  <School size={18} color={isDark ? "#fb7185" : "#e11d48"} />
+                  <School size={16} color={isDark ? "#fb7185" : "#e11d48"} />
                 </View>
                 <View className="flex-1">
                   <Text
@@ -431,7 +432,7 @@ export default function WelcomeScreen() {
                     Campus Focused
                   </Text>
                   <Text
-                    className={`text-xs ${
+                    className={`text-[11px] ${
                       isDark ? "text-zinc-400" : "text-zinc-500"
                     }`}
                   >
@@ -441,18 +442,18 @@ export default function WelcomeScreen() {
               </View>
 
               <View
-                className={`flex-row items-center p-3.5 rounded-2xl border ${
+                className={`flex-row items-center p-3 rounded-2xl border ${
                   isDark
                     ? "bg-zinc-950/80 border-zinc-800/80"
                     : "bg-white/90 border-zinc-200/90 shadow-sm"
                 }`}
               >
                 <View
-                  className={`size-9 rounded-xl items-center justify-center mr-3 ${
+                  className={`size-8 rounded-xl items-center justify-center mr-3 ${
                     isDark ? "bg-rose-950/40" : "bg-rose-50"
                   }`}
                 >
-                  <Flame size={18} color={isDark ? "#fb7185" : "#e11d48"} />
+                  <Flame size={16} color={isDark ? "#fb7185" : "#e11d48"} />
                 </View>
                 <View className="flex-1">
                   <Text
@@ -463,7 +464,7 @@ export default function WelcomeScreen() {
                     Realtime Reactions
                   </Text>
                   <Text
-                    className={`text-xs ${
+                    className={`text-[11px] ${
                       isDark ? "text-zinc-400" : "text-zinc-500"
                     }`}
                   >
@@ -479,7 +480,7 @@ export default function WelcomeScreen() {
               opacity: contentFade,
               transform: [{ translateY: contentSlide }],
             }}
-            className="w-full items-center pb-4 pt-2"
+            className="w-full items-center pb-3 pt-1"
           >
             <View className="relative w-full max-w-[320px] items-center justify-center">
               <Animated.View
@@ -506,7 +507,7 @@ export default function WelcomeScreen() {
                   onPressIn={handlePressIn}
                   onPressOut={handlePressOut}
                   onPress={handleConfessPress}
-                  className="w-full py-4 px-6 rounded-2xl flex-row items-center justify-center gap-2.5 overflow-hidden shadow-lg border border-rose-400/30"
+                  className="w-full py-3.5 px-6 rounded-2xl flex-row items-center justify-center gap-2.5 overflow-hidden shadow-lg border border-rose-400/30"
                   style={{
                     backgroundColor: "#e11d48",
                   }}
@@ -551,7 +552,7 @@ export default function WelcomeScreen() {
               </Animated.View>
             </View>
           </Animated.View>
-        </ScrollView>
+        </View>
       </SafeAreaView>
     </View>
   );

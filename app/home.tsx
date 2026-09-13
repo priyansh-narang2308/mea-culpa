@@ -36,6 +36,7 @@ import {
   Moon,
   MoreVertical,
   Plus,
+  Send,
   Smile,
   Sun,
   X,
@@ -45,6 +46,7 @@ import {
   ActivityIndicator,
   Alert,
   FlatList,
+  Keyboard,
   KeyboardAvoidingView,
   Modal,
   Platform,
@@ -56,7 +58,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { toast } from "sonner-native";
 
 const CATEGORIES: { id: PostCategory | "all"; label: string }[] = [
@@ -118,6 +120,7 @@ function getCategoryColor(category: PostCategory, isDark: boolean) {
 
 export default function HomeScreen() {
   const { isDark, toggleTheme } = useAppTheme();
+  const insets = useSafeAreaInsets();
   const [selectedCategory, setSelectedCategory] = useState<
     PostCategory | "all"
   >("all");
@@ -659,16 +662,22 @@ export default function HomeScreen() {
         />
       )}
 
-      <View className="absolute bottom-7 right-5">
+      <View
+        style={{
+          position: "absolute",
+          bottom: Math.max(insets.bottom + 20, 36),
+          right: 20,
+        }}
+      >
         <TouchableOpacity
           onPress={() => setComposerOpen(true)}
           activeOpacity={0.88}
-          className="flex-row items-center gap-2 bg-rose-600 px-5 py-3.5 rounded-full shadow-lg shadow-rose-500/40"
+          className="size-14 rounded-full items-center justify-center bg-rose-600 shadow-xl shadow-rose-500/50"
+          style={{
+            elevation: 8,
+          }}
         >
-          <Plus size={18} color="#ffffff" strokeWidth={2.5} />
-          {/* <Text className="text-sm font-bold text-white tracking-wide">
-            Confess
-          </Text> */}
+          <Plus size={24} color="#ffffff" strokeWidth={2.5} />
         </TouchableOpacity>
       </View>
 
@@ -751,16 +760,37 @@ function ComposerModal({
   onClose: () => void;
 }) {
   const { isDark } = useAppTheme();
+  const insets = useSafeAreaInsets();
   const { myCampus, addPost } = usePostsStore();
   const [newContent, setNewContent] = useState("");
   const [newCategory, setNewCategory] = useState<PostCategory>("confession");
   const [submitting, setSubmitting] = useState(false);
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
+
+  useEffect(() => {
+    const showSub = Keyboard.addListener(
+      Platform.OS === "ios" ? "keyboardWillShow" : "keyboardDidShow",
+      (e) => {
+        setKeyboardHeight(e.endCoordinates.height);
+      },
+    );
+    const hideSub = Keyboard.addListener(
+      Platform.OS === "ios" ? "keyboardWillHide" : "keyboardDidHide",
+      () => {
+        setKeyboardHeight(0);
+      },
+    );
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+    };
+  }, []);
 
   const handleCreatePost = async () => {
     if (!newContent.trim()) {
       Alert.alert(
         "Empty Confession",
-        "Please enter your confession before publishing.",
+        "Please enter your confession before sending.",
       );
       return;
     }
@@ -782,6 +812,7 @@ function ComposerModal({
       visible={visible}
       animationType="slide"
       transparent
+      statusBarTranslucent={true}
       onRequestClose={onClose}
     >
       <BlurView
@@ -793,15 +824,25 @@ function ComposerModal({
         behavior={Platform.OS === "ios" ? "padding" : undefined}
         className="flex-1"
       >
-        <Pressable className="flex-1 justify-end" onPress={onClose}>
+        <Pressable
+          className="flex-1 justify-end"
+          onPress={() => {
+            Keyboard.dismiss();
+            onClose();
+          }}
+          style={{
+            paddingBottom: Platform.OS === "android" ? keyboardHeight : 0,
+          }}
+        >
           <Pressable
             onPress={(e) => e.stopPropagation()}
-            className={`rounded-t-3xl border-t p-5 pb-8 ${
+            className={`rounded-t-3xl border-t p-5 ${
               isDark
                 ? "bg-zinc-900 border-zinc-800"
                 : "bg-white border-zinc-200"
             }`}
             style={{
+              paddingBottom: keyboardHeight > 0 ? 16 : Math.max(insets.bottom, 24),
               shadowColor: isDark ? "#000" : "#71717a",
               shadowOffset: { width: 0, height: -10 },
               shadowOpacity: isDark ? 0.5 : 0.1,
@@ -926,8 +967,9 @@ function ComposerModal({
                   <ActivityIndicator size="small" color="#ffffff" />
                 ) : (
                   <>
+                    <Send size={13} color="#ffffff" style={{ marginRight: 2 }} />
                     <Text className="text-xs font-bold text-white uppercase tracking-wider">
-                      Publish
+                      Confess
                     </Text>
                   </>
                 )}
