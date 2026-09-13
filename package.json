@@ -50,7 +50,10 @@
     "zustand": "^5.0.15"
   },
   "devDependencies": {
+    "@react-native/metro-babel-transformer": "^0.86.3",
+    "@react-native/metro-config": "^0.86.3",
     "@types/react": "~19.2.2",
+    "prettier": "^3.9.6",
     "typescript": "~6.0.3"
   },
   "scripts": {
