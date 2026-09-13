@@ -3,6 +3,8 @@ import { Stack } from "expo-router";
 import { PortalHost } from "@rn-primitives/portal";
 import { Toaster } from "sonner-native";
 
+export { ErrorBoundary } from "expo-router";
+
 export default function RootLayout() {
   return (
     <>
