@@ -14,7 +14,7 @@
     "babel-preset-expo": "^57.0.11",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
-    "expo": "~57.0.21",
+    "expo": "^57.0.22",
     "expo-blur": "~57.0.2",
     "expo-constants": "~57.0.17",
     "expo-device": "~57.0.1",
