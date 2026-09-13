@@ -82,7 +82,7 @@ export const CAMPUS_GEOFENCE_REGISTRY: Record<string, CampusCenter[]> = {
       name: "BMSCE Bull Temple Road",
       latitude: 12.9411,
       longitude: 77.5655,
-      radiusKm: 3.5,
+      radiusKm: 1.5,
     },
   ],
   "Bangalore Institute of Technology": [
@@ -90,7 +90,7 @@ export const CAMPUS_GEOFENCE_REGISTRY: Record<string, CampusCenter[]> = {
       name: "BIT KR Road Campus",
       latitude: 12.9575,
       longitude: 77.5746,
-      radiusKm: 3.5,
+      radiusKm: 1.5,
     },
   ],
   "MS Ramaiah Institute of Technology": [
@@ -125,7 +125,7 @@ export const CAMPUS_GEOFENCE_REGISTRY: Record<string, CampusCenter[]> = {
   ],
 };
 
-const DEFAULT_ALLOWED_RADIUS_KM = 4.0;
+const DEFAULT_ALLOWED_RADIUS_KM = 3.0;
 const GRACE_PERIOD_DAYS = 7;
 const GRACE_PERIOD_MS = GRACE_PERIOD_DAYS * 24 * 60 * 60 * 1000;
 
