@@ -1,6 +1,7 @@
 import { CAMPUSES } from "@/constants/campuses";
 import {
   addCustomCampus,
+  clearSelectedCampus,
   getCustomCampuses,
   setSelectedCampus,
 } from "@/lib/campus-storage";
@@ -31,8 +32,12 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function CampusSelectScreen() {
   const { isDark } = useAppTheme();
-  const { mode } = useLocalSearchParams<{ mode: string }>();
+  const { mode, from } = useLocalSearchParams<{
+    mode?: string;
+    from?: string;
+  }>();
   const isChanging = mode === "change";
+  const isFromConfess = from === "confess";
 
   const [search, setSearch] = useState("");
   const searchInputRef = useRef<TextInput>(null);
@@ -50,10 +55,15 @@ export default function CampusSelectScreen() {
   const handleSelectCampus = async (campusName: string) => {
     if (!campusName.trim()) return;
     const cleanName = campusName.trim();
-    await setSelectedCampus(cleanName);
-    setMyCampus(cleanName);
+    if (cleanName === "All Campuses") {
+      await clearSelectedCampus();
+      setMyCampus(null);
+    } else {
+      await setSelectedCampus(cleanName);
+      setMyCampus(cleanName);
+    }
 
-    if (isChanging) {
+    if (isChanging || isFromConfess) {
       router.back();
     } else {
       router.replace("/home");
@@ -262,7 +272,7 @@ export default function CampusSelectScreen() {
                 </Text>
               </View>
             </View>
-            {myCampus === "All Campuses" && (
+            {(!myCampus || myCampus === "All Campuses") && (
               <Check size={18} color={isDark ? "#fb7185" : "#e11d48"} />
             )}
           </TouchableOpacity>

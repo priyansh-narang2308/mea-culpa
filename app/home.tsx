@@ -20,7 +20,7 @@ import { Text as RNRText } from "@/components/ui/text";
 import { CampusVerificationModal } from "@/components/CampusVerificationModal";
 import { VerifiedBadgeButton } from "@/components/VerifiedBadgeButton";
 import { getCampusVerificationStatus } from "@/lib/campus-geofence";
-import { getSelectedCampus } from "@/lib/campus-storage";
+import { clearSelectedCampus, getSelectedCampus } from "@/lib/campus-storage";
 import { useAppTheme } from "@/lib/theme-manager";
 import { usePostsStore } from "@/stores/usePostsStore";
 import { Post, PostCategory } from "@/types/post";
@@ -33,6 +33,7 @@ import {
   Flag,
   Flame,
   Frown,
+  Globe,
   Heart,
   HeartCrack,
   MapPin,
@@ -170,12 +171,12 @@ export default function HomeScreen() {
       let activeCampus = myCampus;
       if (!activeCampus) {
         const saved = await getSelectedCampus();
-        if (saved) {
+        if (saved && saved !== "All Campuses") {
           usePostsStore.getState().setMyCampus(saved);
           activeCampus = saved;
         }
       }
-      if (activeCampus) {
+      if (activeCampus && activeCampus !== "All Campuses") {
         checkCampusVerification(activeCampus);
       }
       await usePostsStore.getState().loadUserReactions();
@@ -185,8 +186,11 @@ export default function HomeScreen() {
   }, []);
 
   useEffect(() => {
-    if (myCampus) {
+    if (myCampus && myCampus !== "All Campuses") {
       checkCampusVerification(myCampus);
+    } else {
+      setIsVerified(false);
+      setDaysRemaining(0);
     }
   }, [myCampus]);
 
@@ -201,7 +205,7 @@ export default function HomeScreen() {
   const handleRefresh = async () => {
     setRefreshing(true);
     await fetchPosts();
-    if (myCampus) {
+    if (myCampus && myCampus !== "All Campuses") {
       await checkCampusVerification(myCampus);
     }
     setRefreshing(false);
@@ -209,8 +213,10 @@ export default function HomeScreen() {
 
   const handlePressConfess = async () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    if (showAllCampuses || !myCampus) {
-      setComposerOpen(true);
+
+    // If user has not selected a campus yet, help them select or add their campus first!
+    if (!myCampus || myCampus === "All Campuses") {
+      router.push("/campus-select?from=confess");
       return;
     }
 
@@ -561,7 +567,9 @@ export default function HomeScreen() {
               <DropdownMenuLabel
                 className={`font-semibold ${isDark ? "text-zinc-300" : "text-zinc-800"}`}
               >
-                {myCampus ? `Campus: ${myCampus}` : "No Campus Selected"}
+                {myCampus && myCampus !== "All Campuses"
+                  ? `Campus: ${myCampus}`
+                  : "General (All Campuses)"}
               </DropdownMenuLabel>
               <DropdownMenuSeparator
                 className={isDark ? "bg-zinc-800" : "bg-zinc-100"}
@@ -578,9 +586,34 @@ export default function HomeScreen() {
                 <Text
                   className={`font-semibold ${isDark ? "text-white" : "text-zinc-900"}`}
                 >
-                  Change Campus
+                  {myCampus && myCampus !== "All Campuses"
+                    ? "Change Campus"
+                    : "Select Campus"}
                 </Text>
               </DropdownMenuItem>
+
+              {myCampus && myCampus !== "All Campuses" && (
+                <DropdownMenuItem
+                  onPress={async () => {
+                    await clearSelectedCampus();
+                    usePostsStore.getState().setMyCampus(null);
+                    setIsVerified(false);
+                    setDaysRemaining(0);
+                    toast.success("Switched to General (All Campuses)");
+                  }}
+                >
+                  <Globe
+                    size={16}
+                    color={isDark ? "#fb7185" : "#e11d48"}
+                    className="mr-2"
+                  />
+                  <Text
+                    className={`font-semibold ${isDark ? "text-white" : "text-zinc-900"}`}
+                  >
+                    Reset to General Feed
+                  </Text>
+                </DropdownMenuItem>
+              )}
 
               <DropdownMenuItem
                 onPress={() => toggleShowAllCampuses(!showAllCampuses)}

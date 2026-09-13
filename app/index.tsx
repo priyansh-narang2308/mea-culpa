@@ -136,11 +136,7 @@ export default function WelcomeScreen() {
     }).start();
   };
 
-  const handleConfessPress = async () => {
-    if (!myCampus) {
-      await setSelectedCampus("PES University");
-      setMyCampus("PES University");
-    }
+  const handleConfessPress = () => {
     router.replace("/home");
   };
 

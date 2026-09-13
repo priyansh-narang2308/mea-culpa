@@ -1,8 +1,10 @@
 import { useAppTheme } from "@/lib/theme-manager";
 import * as Haptics from "expo-haptics";
+import { router } from "expo-router";
 import {
   CheckCircle2,
   Clock,
+  Globe,
   MapPin,
   RefreshCw,
   ShieldCheck,
@@ -36,7 +38,9 @@ export function VerifiedBadgeButton({
 
   const handlePress = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    if (isVerified) {
+    if (isAllCampuses) {
+      router.push("/campus-select");
+    } else if (isVerified) {
       setDetailsOpen(true);
     } else if (onPressVerify) {
       onPressVerify();
@@ -58,34 +62,42 @@ export function VerifiedBadgeButton({
               : "bg-zinc-100 border-zinc-200"
         }`}
       >
-        <View
-          className={`size-2.5 rounded-full ${
-            isVerified ? "bg-emerald-500" : "bg-zinc-400"
-          }`}
-          style={
-            isVerified
-              ? {
-                  shadowColor: "#10b981",
-                  shadowOffset: { width: 0, height: 0 },
-                  shadowOpacity: 0.8,
-                  shadowRadius: 4,
-                  elevation: 2,
-                }
-              : undefined
-          }
-        />
+        {isAllCampuses ? (
+          <Globe size={11} color={isDark ? "#a1a1aa" : "#71717a"} />
+        ) : (
+          <View
+            className={`size-2.5 rounded-full ${
+              isVerified ? "bg-emerald-500" : "bg-zinc-400"
+            }`}
+            style={
+              isVerified
+                ? {
+                    shadowColor: "#10b981",
+                    shadowOffset: { width: 0, height: 0 },
+                    shadowOpacity: 0.8,
+                    shadowRadius: 4,
+                    elevation: 2,
+                  }
+                : undefined
+            }
+          />
+        )}
         <Text
           className={`text-[11px] font-bold tracking-tight ${
-            isVerified
+            isAllCampuses
               ? isDark
-                ? "text-emerald-400"
-                : "text-emerald-700"
-              : isDark
                 ? "text-zinc-400"
                 : "text-zinc-600"
+              : isVerified
+                ? isDark
+                  ? "text-emerald-400"
+                  : "text-emerald-700"
+                : isDark
+                  ? "text-zinc-400"
+                  : "text-zinc-600"
           }`}
         >
-          {isVerified ? "Verified" : "Verify"}
+          {isAllCampuses ? "Select Campus" : isVerified ? "Verified" : "Verify"}
         </Text>
       </TouchableOpacity>
 

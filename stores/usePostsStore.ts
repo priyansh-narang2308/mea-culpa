@@ -17,7 +17,7 @@ interface PostsState {
   reportedPostIds: string[];
   myCampus: string | null;
   showAllCampuses: boolean;
-  setMyCampus: (campus: string) => void;
+  setMyCampus: (campus: string | null) => void;
   toggleShowAllCampuses: (show: boolean) => void;
   loadUserReactions: () => Promise<void>;
   loadReportedPosts: () => Promise<void>;
@@ -52,7 +52,7 @@ export const usePostsStore = create<PostsState>()((set, get) => {
     myCampus: null,
     showAllCampuses: false,
 
-    setMyCampus: (campus: string) => set({ myCampus: campus }),
+    setMyCampus: (campus: string | null) => set({ myCampus: campus }),
     toggleShowAllCampuses: () =>
       set({ showAllCampuses: !get().showAllCampuses }),
 
